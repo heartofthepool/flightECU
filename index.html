@@ -54,6 +54,9 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
  stroke-dasharray:16;stroke-dashoffset:16;animation:drw .45s .05s ease forwards}
 @keyframes drw{to{stroke-dashoffset:0}}
 @keyframes pop{from{transform:scale(.5)}to{transform:scale(1)}}
+#stamp .tx{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
+#stamp .tx b{font-size:10.5px;font-weight:700}
+#stamp .tx small{font-size:9px;font-weight:400;color:var(--mut)}
 
 /* ====== LOCK (bug cu: .lock de len [hidden]) ====== */
 .lock{min-height:88vh;display:flex;flex-direction:column;align-items:center;
@@ -643,13 +646,9 @@ const RING_R=8, RING_C=2*Math.PI*RING_R;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const ICON_OK='<svg class="ic ok" viewBox="0 0 22 22"><circle cx="11" cy="11" r="10"/><path d="M6.5 11.5l3 3 6-6.5"/></svg>';
 let busyNow=false;
-function setRing(pct){
-  const a=$('#stamp .arc'), s=$('#stamp .pct');
-  const p=Math.min(100,Math.max(0,pct));
-  if(a) a.style.strokeDashoffset=RING_C*(1-p/100);
-  if(s) s.textContent='Đang cập nhật '+Math.round(p)+'%';
-}
-function setStamp(state,pct){
+const setRing=pct=>{const a=$('#stamp .arc'); if(a) a.style.strokeDashoffset=RING_C*(1-Math.min(100,Math.max(0,pct))/100);};
+const setSub=s=>{const e=$('#stamp small'); if(e) e.textContent=s;};
+function setStamp(state,sub){
   const el=$('#stamp');
   const t=DATA&&DATA.gen?new Date(DATA.gen).toLocaleString('vi-VN',
       {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
@@ -657,12 +656,11 @@ function setStamp(state,pct){
   if(state==='busy'){
     el.innerHTML='<svg class="ic" viewBox="0 0 22 22"><circle class="trk" cx="11" cy="11" r="'+RING_R+'"/>'
       +'<circle class="arc" cx="11" cy="11" r="'+RING_R+'" stroke-dasharray="'+RING_C+'" style="stroke-dashoffset:'+RING_C+'"/></svg>'
-      +'<span class="pct"></span>';
-    setRing(pct||0);
+      +'<span class="tx"><b>Đang cập nhật</b><small>'+esc(sub||'')+'</small></span>';
   }else if(state==='ok'){
-    el.innerHTML=ICON_OK+'<span>Đã cập nhật<br>'+t+'</span>';
+    el.innerHTML=ICON_OK+'<span class="tx"><b>Đã cập nhật</b><small>'+esc(sub||'dữ liệu mới nhất')+'</small></span>';
   }else{
-    el.innerHTML='<span>Cập nhật<br>'+t+'</span>';
+    el.innerHTML='<span class="tx"><b>Cập nhật</b><small>'+t+'</small></span>';
   }
 }
 const ntfyPoll=async url=>{
@@ -682,7 +680,8 @@ async function forceRefresh(){
   const oldGen=DATA.gen, req=String(Date.now()), t0=Date.now();
   const base='https://ntfy.sh/'+encodeURIComponent(DATA.ntfy), stBase=base+'-st';
   let since=Math.floor(t0/1000)-1, real=0, shown=0, gotRun=false, phase='wait';
-  setStamp('busy',0);
+  const finish=()=>{busyNow=false; setStamp('ok'); setTimeout(()=>{ if(!busyNow) setStamp(); },2500);};
+  setStamp('busy','Đang kết nối Mac mini');
   try{
     const sent=await fetch(base,{method:'POST',body:JSON.stringify({cmd:'refresh',req})});
     if(!sent.ok) throw new Error('send');
@@ -691,7 +690,7 @@ async function forceRefresh(){
     const el=Date.now()-t0;
     if(!gotRun && el>90000) return fail('Mac mini chưa phản hồi.<br>Kiểm tra máy có bật và đang kết nối mạng.');
     if(el>300000) return fail('Mac mini đang bận quá lâu.<br>Thử lại sau ít phút.');
-    await sleep(2000);
+    await sleep(1500);
     try{
       if(phase!=='pages'){
         const msgs=await ntfyPoll(stBase+'/json?poll=1&since='+since);
@@ -703,8 +702,13 @@ async function forceRefresh(){
           if(p.st==='login') return fail('Cần đăng nhập lại eCrew trên Mac mini.');
           if(p.st==='busy') return fail('Mac mini đang đồng bộ, thử lại sau ít phút.');
           if(p.st==='err') return fail('Mac mini gặp lỗi khi cập nhật.<br>Xem nhật ký trên máy.');
-          if(p.st==='run'){ gotRun=true; phase='run'; real=Math.max(real,p.p); }
-          if(p.st==='ok'){ gotRun=true; phase='pages'; real=100; }
+          if(p.st==='run'){ gotRun=true; real=Math.max(real,p.p); if(p.msg) setSub(p.msg); }
+          if(p.st==='same'){
+            gotRun=true;
+            if(p.gen===DATA.gen) return finish();
+            phase='pages'; setSub('Đang tải dữ liệu mới về');
+          }
+          if(p.st==='ok'){ gotRun=true; phase='pages'; setSub('Đang chờ GitHub cập nhật'); }
         }
       }else{
         const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});
@@ -712,16 +716,16 @@ async function forceRefresh(){
         if(j.gen&&j.gen!==oldGen){
           DATA=await decrypt(j,key);
           try{localStorage.setItem(CACHE,JSON.stringify(DATA))}catch(e){}
-          busyNow=false; render(); setStamp('ok');
-          setTimeout(()=>{ if(!busyNow) setStamp(); },2500);
+          render(); setRing(100); finish();
           return;
         }
       }
     }catch(e){}
-    shown=phase==='pages'?99:Math.min(95,Math.max(real,shown+0.4));
-    setRing(shown);
+    if(phase==='pages') setRing(100);
+    else { shown=Math.min(95,Math.max(real,shown+0.4)); setRing(shown); }
   }
 }
+
 function render(){
   const ds=DATA.duties||[];
   setStamp();
