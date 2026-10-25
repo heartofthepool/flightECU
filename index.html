@@ -31,12 +31,11 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
  padding:calc(12px + env(safe-area-inset-top,0px)) 14px 10px}
 #hdr .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px}
 .brand{display:flex;flex-direction:column;align-items:stretch;min-width:0}
-.sig{display:flex;justify-content:space-between;margin-top:-2px;width:78%;
- font-size:11px;font-weight:700;color:#8ea4c4;letter-spacing:.01em}
+.sig{margin-top:1px;font-size:11.5px;font-weight:700;color:#8ea4c4}
 .sig .hr{color:#fff}
 #scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .wrap{max-width:760px;margin:0 auto;padding:0 14px 20px}
-#hdr h1{font-size:36px;margin:0;font-weight:800;letter-spacing:-.3px}
+#hdr h1{font-size:36px;margin:0;font-weight:800;letter-spacing:-.3px;line-height:1}
 #hdr h1 span{color:var(--acc)}
 #hdr .sub{font-size:10.5px;color:var(--mut);margin-left:auto;text-align:right;
  line-height:1.3;background:var(--card);border:1px solid var(--line);border-radius:11px;
@@ -252,7 +251,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 
 .tabs{flex:none;display:flex;gap:4px;z-index:20;background:#0f1a2e;
  border-top:1px solid var(--line);
- padding:8px 8px 6px}
+ padding:8px 8px calc(6px + env(safe-area-inset-bottom,0px))}
 .tabs .in{max-width:760px;margin:0 auto;display:flex;gap:4px;width:100%}
 .tabs button{flex:1;background:none;border:0;color:var(--mut);font:700 10px/1.25 inherit;
  padding:5px 1px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -284,7 +283,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 <header id="hdr" hidden><div class="in">
   <div class="brand">
     <h1>Ecrew<span>Ultra</span></h1>
-    <div class="sig"><span>Tuấn</span><span>Anh</span><span class="hr">♥</span><span>Hồng</span><span>Huệ</span></div>
+    <div class="sig">Tuấn Anh <span class="hr">♥</span> Hồng Huệ</div>
   </div>
   <button class="sub" id="stamp"></button>
 </div></header>
@@ -696,7 +695,7 @@ async function forceRefresh(){
   const oldGen=DATA.gen, req=String(Date.now()), t0=Date.now();
   const base='https://ntfy.sh/'+encodeURIComponent(DATA.ntfy), stBase=base+'-st';
   let since=Math.floor(t0/1000)-1, real=0, shown=0, gotRun=false, phase='wait';
-  const finish=()=>{busyNow=false; setStamp('ok'); setTimeout(()=>{ if(!busyNow) setStamp(); },2500);};
+  const finish=(note)=>{busyNow=false; setStamp('ok',note); setTimeout(()=>{ if(!busyNow) setStamp(); },2600);};
   setStamp('busy','Đang kết nối Mac mini');
   try{
     const sent=await fetch(base,{method:'POST',body:JSON.stringify({cmd:'refresh',req})});
@@ -721,8 +720,13 @@ async function forceRefresh(){
           if(p.st==='run'){ gotRun=true; real=Math.max(real,p.p); if(p.msg) setSub(p.msg); }
           if(p.st==='same'){
             gotRun=true;
-            if(p.gen===DATA.gen) return finish();
-            phase='pages'; setSub('Đang tải dữ liệu mới về');
+            setSub('Lịch không có gì thay đổi');
+            if(p.gen){
+              DATA.gen=p.gen;
+              try{localStorage.setItem(CACHE,JSON.stringify(DATA))}catch(e){}
+            }
+            setRing(100); render();
+            return finish('lịch không đổi');
           }
           if(p.st==='ok'){ gotRun=true; phase='pages'; setSub('Đang chờ GitHub cập nhật'); }
         }
