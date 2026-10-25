@@ -1,4 +1,4 @@
-const C='ecrewultra-v34';
+const C='ecrewultra-v35';
 const SHELL=['./','./index.html','./manifest.webmanifest','./icon.png','./apple-touch-icon.png'];
 
 self.addEventListener('install',e=>{
@@ -25,6 +25,7 @@ function networkFirst(req){
 self.addEventListener('fetch',e=>{
   const req=e.request;
   if(req.method!=='GET') return;
+  if(req.url.indexOf('ntfy.sh')>=0) return;   /* de trinh duyet tu xu ly */
   const u=new URL(req.url);
   const isPage = req.mode==='navigate'
     || u.pathname.endsWith('/') || u.pathname.endsWith('index.html');
