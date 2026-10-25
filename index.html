@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="EcrewUltra">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon.png">
 <title>EcrewUltra</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -74,6 +77,27 @@ header .sub:active{background:var(--card2)}
 .badge{font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:4px;
  background:#2d2350;color:var(--dh);border:1px solid #42337a}
 .badge.cap{background:#1d3326;color:#7bd68e;border-color:#2f5c3d}
+
+
+/* ====== MAN HINH MO DAU ====== */
+#splash{position:fixed;inset:0;z-index:100;background:var(--bg);
+ display:flex;align-items:center;justify-content:center;overflow:hidden}
+#splash[hidden]{display:none!important}
+#splash.out{animation:spfade .55s ease forwards}
+@keyframes spfade{to{opacity:0;visibility:hidden}}
+.sttl{font-size:clamp(34px,11vw,72px);font-weight:800;letter-spacing:-1.5px;
+ z-index:2;animation:sttlIn .55s cubic-bezier(.2,.9,.3,1.2) both}
+.sttl span{color:var(--acc)}
+.sttl.go{animation:sttlOut .5s ease forwards}
+@keyframes sttlIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+@keyframes sttlOut{to{opacity:0;transform:scale(1.5) translateY(-12px)}}
+.pl{position:absolute;bottom:-14vh;font-size:26px;line-height:1;color:#7fc0ff;
+ opacity:0;will-change:transform,opacity}
+@keyframes fly{
+  0%{opacity:0;transform:translateY(0) rotate(-35deg) scale(.7)}
+  12%{opacity:1}
+  100%{opacity:0;transform:translateY(-135vh) rotate(-35deg) scale(1.25)}
+}
 
 /* ====== THE DUTY KIEU ECREW ====== */
 .grp{background:var(--card);border:1px solid var(--line);border-left-width:4px;
@@ -206,9 +230,24 @@ header .sub:active{background:var(--card2)}
 .pane{display:none}.pane.on{display:block}
 .empty-msg{color:var(--mut);text-align:center;padding:34px 10px;font-size:14px}
 .foot{text-align:center;color:#5b6b86;font-size:11px;padding:14px 0 4px}
+
+/* ====== iPad / man hinh rong ====== */
+@media (min-width:700px){
+  .wrap,#hdr .in,.tabs .in,.dbody{max-width:860px}
+  .tabs button{font-size:11.5px}.tabs button .ic{font-size:19px}
+  .lg{font-size:16px}.dayhd .dd{font-size:23px}
+  .prep .t{font-size:22px}.prep .k{font-size:10.5px}
+  .dtitle{font-size:38px}
+  header h1{font-size:42px}
+}
+@media (min-width:1000px){
+  .wrap,#hdr .in,.tabs .in,.dbody{max-width:960px}
+}
 </style>
 </head>
 <body>
+
+<div id="splash"><div class="sttl" id="sttl">Ecrew<span>Ultra</span></div></div>
 
 <div id="shell">
 <header id="hdr" hidden><div class="in">
@@ -725,6 +764,24 @@ $('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('#go').click()});
 $('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   $$('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
   $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));$('#scroll').scrollTop=0;};
+/* ---------- man hinh mo dau ---------- */
+function runSplash(){
+  const sp=$('#splash'); if(!sp) return;
+  const N=26;
+  for(let i=0;i<N;i++){
+    const e=document.createElement('span');
+    e.className='pl'; e.textContent='\u2708';
+    e.style.left=(Math.random()*96)+'vw';
+    e.style.fontSize=(15+Math.random()*26)+'px';
+    e.style.opacity='0';
+    e.style.animation=`fly ${(0.75+Math.random()*0.5).toFixed(2)}s cubic-bezier(.3,0,.5,1) ${(1+Math.random()*0.45).toFixed(2)}s forwards`;
+    sp.appendChild(e);
+  }
+  setTimeout(()=>$('#sttl').classList.add('go'),1000);
+  setTimeout(()=>sp.classList.add('out'),1500);
+  setTimeout(()=>{sp.hidden=true},2100);
+}
+runSplash();
 boot();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
