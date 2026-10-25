@@ -20,8 +20,8 @@
 html{height:100%}
 html,body{margin:0;background:var(--bg);color:var(--fg);
  font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
-body{-webkit-font-smoothing:antialiased;height:100vh;height:100dvh;
- display:flex;flex-direction:column;overflow:hidden}
+body{-webkit-font-smoothing:antialiased;overflow:hidden}
+#shell{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column}
 #hdr{flex:none;background:var(--bg);border-bottom:1px solid var(--line);
  padding:calc(10px + var(--st)) 14px 10px}
 #hdr .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px}
@@ -74,7 +74,6 @@ header .sub:active{background:var(--card2)}
 .badge{font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:4px;
  background:#2d2350;color:var(--dh);border:1px solid #42337a}
 .badge.cap{background:#1d3326;color:#7bd68e;border-color:#2f5c3d}
-
 
 /* ====== THE DUTY KIEU ECREW ====== */
 .grp{background:var(--card);border:1px solid var(--line);border-left-width:4px;
@@ -211,6 +210,7 @@ header .sub:active{background:var(--card2)}
 </head>
 <body>
 
+<div id="shell">
 <header id="hdr" hidden><div class="in">
   <h1>Ecrew<span>Ultra</span></h1><button class="sub" id="stamp"></button>
 </div></header>
@@ -235,13 +235,9 @@ header .sub:active{background:var(--card2)}
 </div>
 </main>
 
-<div id="detail" hidden>
-  <div class="dhd"><button id="back">‹ Quay lại</button><span class="t" id="dttl"></span></div>
-  <div class="dbody" id="dbody"></div>
 </div>
 
-<div id="modal" hidden><div class="mbox">
-  <div class="mtx" id="mtx"></div><button id="mok">Đóng</button></div></div>
+</div>
 
 <nav class="tabs" id="tabs" hidden><div class="in">
   <button data-p="sched" aria-selected="true"><span class="ic">🗓</span>Lịch bay</button>
@@ -249,6 +245,14 @@ header .sub:active{background:var(--card2)}
   <button data-p="crew" aria-selected="false"><span class="ic">👥</span>Tổ bay</button>
   <button data-p="pay" aria-selected="false"><span class="ic">⏱</span>Giờ &amp; lương</button>
 </div></nav>
+</div>
+
+<div id="detail" hidden>
+  <div class="dhd"><button id="back">‹ Quay lại</button><span class="t" id="dttl"></span></div>
+  <div class="dbody" id="dbody"></div>
+
+<div id="modal" hidden><div class="mbox">
+  <div class="mtx" id="mtx"></div><button id="mok">Đóng</button></div>
 
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
