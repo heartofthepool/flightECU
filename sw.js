@@ -1,4 +1,4 @@
-const C='ecrewultra-v2';
+const C='ecrewultra-v3';
 const SHELL=['./','./index.html','./manifest.webmanifest'];
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));
