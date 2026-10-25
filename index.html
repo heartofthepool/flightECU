@@ -17,11 +17,17 @@
   --mk:#f06292;--br:#ffb300;
   --st:env(safe-area-inset-top);--sb2:env(safe-area-inset-bottom);
 }
+html{height:100%}
 html,body{margin:0;background:var(--bg);color:var(--fg);
  font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
-body{-webkit-font-smoothing:antialiased}
-.wrap{max-width:760px;margin:0 auto;padding:0 14px calc(74px + var(--sb2))}
-header{padding:calc(12px + var(--st)) 0 8px;display:flex;align-items:flex-end;gap:10px}
+body{-webkit-font-smoothing:antialiased;height:100vh;height:100dvh;
+ display:flex;flex-direction:column;overflow:hidden}
+#hdr{flex:none;background:var(--bg);border-bottom:1px solid var(--line);
+ padding:calc(10px + var(--st)) 14px 10px}
+#hdr .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px}
+#scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px 20px}
+header{display:contents}
 header h1{font-size:36px;margin:0;font-weight:800;letter-spacing:-.3px}
 header h1 span{color:var(--acc)}
 header .sub{font-size:10.5px;color:var(--mut);margin-left:auto;text-align:right;
@@ -191,9 +197,9 @@ header .sub:active{background:var(--card2)}
 .notice{background:#2a2113;border:1px solid #574424;border-radius:12px;padding:11px;
  font-size:12.5px;color:#ffd479;margin:10px 0;line-height:1.5}
 
-.tabs{display:flex;gap:4px;position:fixed;left:0;right:0;bottom:0;z-index:20;
- background:rgba(11,18,32,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line);
- padding:7px 8px calc(7px + var(--sb2))}
+.tabs{flex:none;display:flex;gap:4px;z-index:20;background:var(--bg);
+ border-top:1px solid var(--line);padding:7px 8px calc(7px + var(--sb2))}
+.tabs .in{max-width:760px;margin:0 auto;display:flex;gap:4px;width:100%}
 .tabs button{flex:1;background:none;border:0;color:var(--mut);font:700 10px/1.25 inherit;
  padding:5px 1px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
 .tabs button .ic{font-size:16px}
@@ -205,6 +211,11 @@ header .sub:active{background:var(--card2)}
 </head>
 <body>
 
+<header id="hdr" hidden><div class="in">
+  <h1>Ecrew<span>Ultra</span></h1><button class="sub" id="stamp"></button>
+</div></header>
+
+<main id="scroll">
 <div class="wrap">
   <div id="lock" class="lock">
     <h2>Ecrew<span>Ultra</span></h2>
@@ -215,7 +226,6 @@ header .sub:active{background:var(--card2)}
   </div>
 
   <div id="app" hidden>
-    <header><h1>Ecrew<span>Ultra</span></h1><button class="sub" id="stamp"></button></header>
     <div class="pane on" id="p-sched"><div id="list"></div></div>
     <div class="pane" id="p-hotel"><div id="hotels"></div></div>
     <div class="pane" id="p-crew"><div id="crew"></div></div>
@@ -223,6 +233,7 @@ header .sub:active{background:var(--card2)}
     <div class="foot" id="foot"></div>
   </div>
 </div>
+</main>
 
 <div id="detail" hidden>
   <div class="dhd"><button id="back">‹ Quay lại</button><span class="t" id="dttl"></span></div>
@@ -232,12 +243,12 @@ header .sub:active{background:var(--card2)}
 <div id="modal" hidden><div class="mbox">
   <div class="mtx" id="mtx"></div><button id="mok">Đóng</button></div></div>
 
-<nav class="tabs" id="tabs" hidden>
+<nav class="tabs" id="tabs" hidden><div class="in">
   <button data-p="sched" aria-selected="true"><span class="ic">🗓</span>Lịch bay</button>
   <button data-p="hotel" aria-selected="false"><span class="ic">🏨</span>Khách sạn</button>
   <button data-p="crew" aria-selected="false"><span class="ic">👥</span>Tổ bay</button>
   <button data-p="pay" aria-selected="false"><span class="ic">⏱</span>Giờ &amp; lương</button>
-</nav>
+</div></nav>
 
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -464,7 +475,7 @@ function openDetail(d){
     };
     draw();
   }
-  scrollTo(0,0); $('#detail').scrollTop=0;
+  $('#detail').scrollTop=0;
 }
 $('#back').onclick=()=>{$('#detail').hidden=true;document.body.style.overflow=''};
 
@@ -606,7 +617,7 @@ function render(){
   $('#nextbtn').onclick=()=>{
     const end=(DATA.period&&DATA.period.end)||'';
     const later=ds.some(d=>dkey(d.s)>end);
-    if(later){ scrollTo(0,document.body.scrollHeight); }
+    if(later){ $('#scroll').scrollTop=$('#scroll').scrollHeight; }
     else showModal('Chưa có lịch tháng tới đâu em yêu.<br>Anh yêu em 💛');
   };
 
@@ -678,7 +689,8 @@ function renderPay(ds){
 
 /* ---------- khoi dong ---------- */
 function show(){
-  $('#lock').hidden=true; $('#app').hidden=false; $('#tabs').hidden=false; render();
+  $('#lock').hidden=true; $('#app').hidden=false;
+  $('#tabs').hidden=false; $('#hdr').hidden=false; render();
 }
 async function boot(){
   const saved=localStorage.getItem(LSK);
@@ -708,7 +720,7 @@ $('#go').onclick=async()=>{
 $('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('#go').click()});
 $('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   $$('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
-  $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));scrollTo(0,0);};
+  $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));$('#scroll').scrollTop=0;};
 boot();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
