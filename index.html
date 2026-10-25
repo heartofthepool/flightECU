@@ -12,7 +12,7 @@
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#0b1220;--card:#131d31;--card2:#18243c;--line:#24334f;--fg:#eef3fb;--mut:#93a4c0;
+  --bg:#070d18;--card:#1b2840;--card2:#223150;--line:#2e4066;--fg:#eef3fb;--mut:#93a4c0;
   --acc:#4da3ff;--fl:#2196f3;--ho:#ff9800;--off:#4caf50;--sb:#00bcd4;--dh:#b388ff;
   --mk:#f06292;--br:#ffb300;
   --st:env(safe-area-inset-top);--sb2:env(safe-area-inset-bottom);
@@ -24,7 +24,14 @@ body{-webkit-font-smoothing:antialiased}
 header{padding:calc(12px + var(--st)) 0 8px;display:flex;align-items:flex-end;gap:10px}
 header h1{font-size:36px;margin:0;font-weight:800;letter-spacing:-.3px}
 header h1 span{color:var(--acc)}
-header .sub{font-size:10.5px;color:var(--mut);margin-left:auto;text-align:right;line-height:1.3}
+header .sub{font-size:10.5px;color:var(--mut);margin-left:auto;text-align:right;
+ line-height:1.3;background:var(--card);border:1px solid var(--line);border-radius:11px;
+ padding:7px 11px;font-weight:700;display:flex;align-items:center;gap:7px}
+header .sub:active{background:var(--card2)}
+.spin{width:13px;height:13px;border:2px solid #3b4d72;border-top-color:var(--acc);
+ border-radius:50%;display:none}
+.sub.busy .spin{display:block;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
 
 /* ====== LOCK (bug cu: .lock de len [hidden]) ====== */
 .lock{min-height:88vh;display:flex;flex-direction:column;align-items:center;
@@ -73,11 +80,11 @@ header .sub{font-size:10.5px;color:var(--mut);margin-left:auto;text-align:right;
 .dayhd .ww{font-size:12.5px;color:var(--mut);font-weight:700}
 .dayhd .tg{margin-left:auto;font-size:10px;padding:2px 7px;border-radius:99px;
  background:#1c2a44;color:var(--mut);font-weight:800}
-.prep{display:flex;gap:8px;flex-wrap:wrap;margin:7px 13px 0;padding:8px 10px;
- background:#101a2c;border:1px solid var(--line);border-radius:10px}
-.prep div{flex:1;min-width:84px}
-.prep .t{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
-.prep .k{font-size:10px;color:var(--mut);font-weight:700;margin-top:1px}
+.prep{display:flex;gap:4px;margin:8px 13px 2px;padding:10px 8px;
+ background:#0a1120;border:1px solid #1d2b45;border-radius:12px}
+.prep div{flex:1;text-align:center}
+.prep .t{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+.prep .k{font-size:9.5px;color:#7d8ca8;font-weight:800;margin-top:2px;letter-spacing:.06em}
 .prep .m .t{color:var(--mk)}.prep .b .t{color:var(--br)}.prep .o .t{color:var(--acc)}
 .duty{padding:9px 13px 11px;cursor:pointer}
 .duty+.duty{border-top:1px solid #1b2742}
@@ -111,7 +118,9 @@ header .sub{font-size:10.5px;color:var(--mut);margin-left:auto;text-align:right;
  -webkit-overflow-scrolling:touch}
 .dhd{position:sticky;top:0;background:rgba(11,18,32,.96);backdrop-filter:blur(12px);
  border-bottom:1px solid var(--line);padding:calc(8px + var(--st)) 14px 10px;display:flex;gap:10px;align-items:center;z-index:2}
-.dhd button{background:none;border:0;color:var(--acc);font:800 15px inherit;padding:6px 2px}
+.dhd button{background:var(--card2);border:1px solid var(--line);color:var(--acc);
+ font:800 16px inherit;padding:11px 18px;border-radius:12px;flex:none}
+.dhd button:active{background:#2b3f66}
 .dhd .t{font-weight:800;font-size:16px}
 .dbody{max-width:760px;margin:0 auto;padding:12px 14px calc(30px + var(--sb2))}
 .dtitle{font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1.1}
@@ -206,7 +215,7 @@ header .sub{font-size:10.5px;color:var(--mut);margin-left:auto;text-align:right;
   </div>
 
   <div id="app" hidden>
-    <header><h1>Ecrew<span>Ultra</span></h1><span class="sub" id="stamp"></span></header>
+    <header><h1>Ecrew<span>Ultra</span></h1><button class="sub" id="stamp"></button></header>
     <div class="pane on" id="p-sched"><div id="list"></div></div>
     <div class="pane" id="p-hotel"><div id="hotels"></div></div>
     <div class="pane" id="p-crew"><div id="crew"></div></div>
@@ -541,10 +550,35 @@ function groupHTML(g){
   return h+'</div>';
 }
 
+function setStamp(busy){
+  const el=$('#stamp');
+  const t=DATA&&DATA.gen?new Date(DATA.gen).toLocaleString('vi-VN',
+      {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+  el.innerHTML='<span class="spin"></span><span>'+(busy?'Đang tải…':'Cập nhật<br>'+t)+'</span>';
+  el.classList.toggle('busy',!!busy);
+}
+async function forceRefresh(){
+  const saved=localStorage.getItem(LSK); if(!saved) return;
+  setStamp(true);
+  try{
+    const key=await crypto.subtle.importKey('raw',b64d(saved),{name:'AES-GCM'},true,['decrypt']);
+    if('serviceWorker' in navigator){
+      try{ const rs=await navigator.serviceWorker.getRegistrations();
+           await Promise.all(rs.map(r=>r.update())); }catch(e){}
+    }
+    const d=await decrypt(await fetchEnc(),key);
+    DATA=d;
+    try{localStorage.setItem(CACHE,JSON.stringify(d))}catch(e){}
+    render();
+  }catch(e){
+    setStamp(false);
+    showModal('Không tải được dữ liệu mới.<br>Kiểm tra lại mạng nhé.');
+  }
+}
+
 function render(){
   const ds=DATA.duties||[];
-  $('#stamp').innerHTML='Cập nhật<br>'+(DATA.gen?new Date(DATA.gen).toLocaleString('vi-VN',
-      {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—');
+  setStamp();
 
   const today=new Date().toISOString().slice(0,10);
   const groups=buildGroups(ds);
@@ -603,6 +637,7 @@ function render(){
 
 function showModal(html){ $('#mtx').innerHTML=html; $('#modal').hidden=false; }
 $('#mok').onclick=()=>{$('#modal').hidden=true};
+$('#stamp').onclick=forceRefresh;
 $('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').hidden=true};
 
 $('#list').onclick=$('#hotels').onclick=e=>{

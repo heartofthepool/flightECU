@@ -1,4 +1,4 @@
-const C='ecrewultra-v6';
+const C='ecrewultra-v7';
 const SHELL=['./','./index.html','./manifest.webmanifest'];
 
 self.addEventListener('install',e=>{
