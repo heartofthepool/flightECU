@@ -140,6 +140,23 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .grp.none{border-left-color:#3a465e;opacity:.6}
 .grp.none .dayhd{padding:11px 13px}
 .grp.none .nolbl{margin-left:auto;font-size:11.5px;color:#6a7a96;font-weight:700}
+.grp.none{cursor:pointer}
+.memo{margin:0 13px 11px;padding:9px 11px;background:#2a2113;border:1px solid #574424;
+ border-radius:10px;font-size:13px;color:#ffd479;white-space:pre-wrap;line-height:1.45}
+.memo b{display:block;font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+ color:#c99b3f;margin-bottom:3px}
+.mynote{margin:0 13px 11px;padding:9px 11px;background:#122a1c;border:1px solid #2f5c3d;
+ border-radius:10px;font-size:13px;color:#9fe0b4;white-space:pre-wrap;line-height:1.45}
+.mynote b{display:block;font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+ color:#5fae79;margin-bottom:3px}
+#note{position:fixed;inset:0;background:var(--bg);z-index:40;display:flex;flex-direction:column}
+#note[hidden]{display:none!important}
+#note .nbody{flex:1;overflow-y:auto;max-width:760px;margin:0 auto;width:100%;
+ padding:12px 14px calc(20px + env(safe-area-inset-bottom,0px))}
+#note textarea{width:100%;min-height:42vh;background:var(--card);color:var(--fg);
+ border:1px solid var(--line);border-radius:14px;padding:13px;font:15px/1.6 inherit;resize:vertical}
+#note .save{width:100%;margin-top:12px;background:var(--acc);color:#04203f;border:0;
+ border-radius:12px;padding:13px;font:800 15px inherit}
 .dayhd{display:flex;align-items:baseline;gap:8px;padding:10px 13px 2px}
 .dayhd .dd{font-size:15.5px;font-weight:800;line-height:1.2;letter-spacing:-.2px}
 .dayhd .ww{font-size:12.5px;color:var(--mut);font-weight:700}
@@ -353,12 +370,22 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
   <div class="dbody" id="dbody"></div>
 </div>
 
+<div id="note" hidden>
+  <div class="dhd"><button id="nback">‹ Quay lại</button><span class="t" id="ndate"></span></div>
+  <div class="nbody">
+    <div id="nmemo"></div>
+    <div class="sec"><h3>Ghi chú của em</h3>
+      <textarea id="ntext" placeholder="Ví dụ: đi học SEP, hẹn khám, sinh nhật..."></textarea>
+      <button class="save" id="nsave">Lưu ghi chú</button></div>
+  </div>
+</div>
+
 <div id="modal" hidden><div class="mbox">
   <div class="mtx" id="mtx"></div><button id="mok">Đóng</button></div>
 </div>
 
 <script>
-const BUILD='20261025-191940';
+const BUILD='20261025-193224';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -381,7 +408,15 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
     location.reload();
   }catch(e){}
 })();
-const LSK='ecrew_key_v1', CACHE='ecrew_cache';
+const LSK='ecrew_key_v1', CACHE='ecrew_cache', NOTES='ecrew_notes';
+const readNotes=()=>{try{return JSON.parse(localStorage.getItem(NOTES)||'{}')}catch(e){return {}}};
+const noteOf=k=>(readNotes()[k]||'').trim();
+function saveNote(k,v){
+  const n=readNotes();
+  if(v.trim()) n[k]=v.trim(); else delete n[k];
+  try{localStorage.setItem(NOTES,JSON.stringify(n))}catch(e){}
+}
+const memoOf=k=>((DATA&&DATA.memos)||[]).filter(m=>m.d===k).map(m=>m.t).join('\n');
 let DATA=null, CUR=null;
 const ME='41057';
 const BASE_TZ=7;   /* eCrew hien gio theo Local Base (HAN) */
@@ -587,6 +622,12 @@ function openDetail(d){
     </div></div>`;
   }
 
+  const dk=dkey(d.s), dmemo=memoOf(dk), dnote=noteOf(dk);
+  if(dmemo) h+=`<div class="sec"><h3>Ghi chú từ eCrew</h3>
+    <div class="box" style="white-space:pre-wrap;color:#ffd479">${esc(dmemo)}</div></div>`;
+  h+=`<div class="sec"><h3>Ghi chú của em</h3>
+    <div class="box" style="white-space:pre-wrap">${dnote?esc(dnote):'<span style="color:var(--mut)">Chưa có ghi chú. Bấm để thêm.</span>'}</div>
+    <button class="copy" data-note="${dk}" style="margin-top:8px">${dnote?'Sửa ghi chú':'Thêm ghi chú'}</button></div>`;
   if(d.details){
     h+=`<div class="sec"><h3>Nguyên văn eCrew</h3><div class="box">
       <div style="white-space:pre-wrap;font-size:12.5px;color:var(--mut)">${esc(d.details)}</div></div></div>`;
@@ -634,6 +675,11 @@ function openDetail(d){
   $('#detail').scrollTop=0;
 }
 $('#back').onclick=()=>{$('#detail').hidden=true;document.body.style.overflow=''};
+$('#dbody').addEventListener('click',e=>{
+  const n=e.target.closest('[data-note]'); if(!n) return;
+  $('#detail').hidden=true; document.body.style.overflow='';
+  openNote(n.dataset.note);
+});
 
 /* ---------- DANH SACH KIEU ECREW ---------- */
 function landing(d){
@@ -699,6 +745,9 @@ function dutyHTML(d,i){
   }
   if(d.debrief) h+=`<div class="rep"><span>Debriefing time :</span> ${d.debrief}</div>`;
   h+='</div>';
+  const k=dkey(d.s), mm=memoOf(k), nn=noteOf(k);
+  if(mm) h+=`<div class="memo"><b>Ghi chú từ eCrew</b>${esc(mm)}</div>`;
+  if(nn) h+=`<div class="mynote"><b>Ghi chú của em</b>${esc(nn)}</div>`;
   return h;
 }
 
@@ -927,10 +976,15 @@ function render(){
     const ends=ds.map(d=>dkey(d.e||d.s)).sort();
     let k=starts[0]; const last=ends[ends.length-1];
     for(let i=0;i<400 && k<=last;i++){
-      if(!used.has(k)) items.push({k,last:k,html:
-        `<div class="grp none"><div class="dayhd">
-           <span class="dd">${fullDate(k)}</span>
-           <span class="nolbl">Không có lịch</span></div></div>`});
+      if(!used.has(k)){
+        const mm=memoOf(k), nn=noteOf(k);
+        items.push({k,last:k,html:
+          `<div class="grp none" data-note="${k}"><div class="dayhd">
+             <span class="dd">${fullDate(k)}</span>
+             <span class="nolbl">${mm||nn?'Có ghi chú ›':'Không có lịch ›'}</span></div>
+           ${mm?`<div class="memo"><b>Ghi chú từ eCrew</b>${esc(mm)}</div>`:''}
+           ${nn?`<div class="mynote"><b>Ghi chú của em</b>${esc(nn)}</div>`:''}</div>`});
+      }
       k=addDay(k,1);
     }
   }
@@ -970,12 +1024,29 @@ function render(){
   $('#foot').textContent='Kỳ '+(DATA.period?.start||'')+' → '+(DATA.period?.end||'')+' · bản '+BUILD;
 }
 
+let noteKey=null;
+function openNote(k){
+  noteKey=k;
+  $('#ndate').textContent=fullDate(k);
+  const mm=memoOf(k);
+  $('#nmemo').innerHTML=mm?`<div class="memo"><b>Ghi chú từ eCrew</b>${esc(mm)}</div>`:'';
+  $('#ntext').value=noteOf(k);
+  $('#note').hidden=false;
+}
+$('#nback').onclick=()=>{$('#note').hidden=true};
+$('#nsave').onclick=()=>{
+  if(noteKey){ saveNote(noteKey,$('#ntext').value); render(); }
+  $('#note').hidden=true;
+};
+
 function showModal(html){ $('#mtx').innerHTML=html; $('#modal').hidden=false; }
 $('#mok').onclick=()=>{$('#modal').hidden=true};
 $('#stamp').onclick=forceRefresh;
 $('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').hidden=true};
 
 $('#list').onclick=e=>{
+  const n=e.target.closest('[data-note]');
+  if(n){ openNote(n.dataset.note); return; }
   const b=e.target.closest('.duty'); if(!b||b.dataset.i===undefined) return;
   openDetail(DATA.duties[+b.dataset.i]);
 };
@@ -1026,6 +1097,21 @@ function statBlock(title,st){
     ${row('Ngày layover',st.lay,'nghỉ qua đêm ngoài căn cứ')}
   </div>`;
 }
+function expiryHTML(){
+  const xs=(DATA&&DATA.expiries)||[];
+  if(!xs.length) return '';
+  const now=new Date();
+  const toD=t=>{const m=/(\d{2})\/(\d{2})\/(\d{4})/.exec(t||''); 
+    return m?new Date(+m[3],+m[2]-1,+m[1]):null;};
+  return `<div class="mblk"><h3>Chứng chỉ &amp; giấy tờ</h3>`+
+    xs.map(x=>{
+      const dd=toD(x.exp), days=dd?Math.round((dd-now)/86400000):null;
+      const warn=days!==null&&days<90;
+      return `<div class="mrow"><span>${esc(x.desc||x.code)} <small>${esc(x.code)}</small></span>
+        <b style="font-size:13.5px${warn?';color:#ff8e8e':''}">${esc(x.exp||'—')}</b></div>`;
+    }).join('')+`</div>`;
+}
+
 function renderMonth(ds){
   const r=monthRange(), now=new Date();
   const inM=ds.filter(d=>inRange(d,r));
@@ -1033,6 +1119,7 @@ function renderMonth(ds){
   $('#month').innerHTML=
     statBlock('Tổng quan cả tháng', monthStats(inM))+
     statBlock('Những chuyến bay còn lại', monthStats(left))+
+    expiryHTML()+
     `<div class="mnote">Tính từ <b>${dmy(r.from)}</b> đến hết <b>${dmy(r.to)}</b>,
       tức trọn tháng ${new Date().getMonth()+1}.<br>
       Giờ bay tính theo giờ khởi hành và hạ cánh của từng chặng.
