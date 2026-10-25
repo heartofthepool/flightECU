@@ -3,124 +3,149 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#0b1220">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lịch bay">
+<meta name="apple-mobile-web-app-title" content="EcrewUltra">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Lịch bay</title>
+<title>EcrewUltra</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#0b1220; --card:#131d31; --card2:#192741; --line:#243busy;
-  --line:#24334f; --fg:#eef3fb; --mut:#93a4c0; --acc:#4da3ff;
-  --fl:#2196f3; --ho:#ff9800; --off:#4caf50; --sb:#00bcd4; --dh:#b388ff;
-  --safe-t:env(safe-area-inset-top); --safe-b:env(safe-area-inset-bottom);
+  --bg:#0b1220;--card:#131d31;--card2:#18243c;--line:#24334f;--fg:#eef3fb;--mut:#93a4c0;
+  --acc:#4da3ff;--fl:#2196f3;--ho:#ff9800;--off:#4caf50;--sb:#00bcd4;--dh:#b388ff;
+  --mk:#f06292;--br:#ffb300;--to:#4da3ff;
+  --safe-t:env(safe-area-inset-top);--safe-b:env(safe-area-inset-bottom);
 }
-html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);
+html,body{margin:0;background:var(--bg);color:var(--fg);
  font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
-body{padding-top:var(--safe-t);padding-bottom:calc(64px + var(--safe-b));
- -webkit-font-smoothing:antialiased}
+body{padding-top:var(--safe-t);padding-bottom:calc(66px + var(--safe-b));-webkit-font-smoothing:antialiased}
 .wrap{max-width:720px;margin:0 auto;padding:0 16px}
-header{padding:14px 0 6px;display:flex;align-items:baseline;gap:10px}
-header h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.2px}
-header .sub{font-size:12px;color:var(--mut);margin-left:auto}
+header{padding:14px 0 4px;display:flex;align-items:baseline;gap:8px}
+header h1{font-size:19px;margin:0;font-weight:800;letter-spacing:-.3px}
+header h1 span{color:var(--acc)}
+header .sub{font-size:11px;color:var(--mut);margin-left:auto;text-align:right}
 
-.hero{background:linear-gradient(160deg,#17raise,#1b2b4a);border-radius:18px;padding:18px;
- margin:10px 0 16px;border:1px solid var(--line);
- background:linear-gradient(160deg,#1a2a48,#141f36)}
-.hero .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);font-weight:700}
-.hero .code{font-size:34px;font-weight:800;letter-spacing:-1px;margin:6px 0 2px}
-.hero .route{font-size:17px;color:#cfe0f7;font-weight:600}
-.hero .when{margin-top:12px;font-size:14px;color:var(--mut)}
-.hero .cd{margin-top:10px;font-size:15px;font-weight:700;color:#ffd479}
-.hero .rep{display:inline-block;margin-top:12px;background:#0d1729;border:1px solid var(--line);
- border-radius:10px;padding:8px 12px;font-size:14px}
-.hero .rep b{color:#fff;font-size:17px}
+/* ---- khoi gio quan trong ---- */
+.times{background:var(--card2);border:1px solid var(--line);border-radius:16px;
+ padding:14px 16px;margin:10px 0}
+.times .row{display:flex;align-items:center;gap:12px;padding:7px 0;position:relative}
+.times .dot{width:11px;height:11px;border-radius:50%;flex:none;z-index:1}
+.times .row:not(:last-child):after{content:"";position:absolute;left:5px;top:24px;
+ width:1px;height:calc(100% - 10px);background:var(--line)}
+.times .t{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;min-width:74px;letter-spacing:-.5px}
+.times .lb{font-size:13px;color:var(--mut);line-height:1.25}
+.times .lb b{display:block;color:var(--fg);font-size:14px;font-weight:700}
+.times .r-mk .dot{background:var(--mk)} .times .r-mk .t{color:var(--mk)}
+.times .r-br .dot{background:var(--br)} .times .r-br .t{color:var(--br)}
+.times .r-to .dot{background:var(--to)} .times .r-to .t{color:var(--to);font-size:26px}
+.times .note{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);
+ font-size:11.5px;color:var(--mut)}
 
-.tabs{display:flex;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:9;
- background:rgba(11,18,32,.93);backdrop-filter:blur(14px);border-top:1px solid var(--line);
- padding:8px 12px calc(8px + var(--safe-b))}
-.tabs button{flex:1;background:none;border:0;color:var(--mut);font:600 11px/1.3 inherit;
- padding:6px 2px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
-.tabs button .ic{font-size:17px}
-.tabs button[aria-selected=true]{color:var(--acc);background:#16233c}
+.hero{background:linear-gradient(160deg,#1a2a48,#141f36);border-radius:18px;padding:16px;
+ margin:10px 0 14px;border:1px solid var(--line)}
+.hero .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);font-weight:800}
+.hero .code{font-size:32px;font-weight:800;letter-spacing:-1px;margin:4px 0 0}
+.hero .route{font-size:15px;color:#cfe0f7;font-weight:600}
+.hero .when{margin-top:8px;font-size:13.5px;color:var(--mut)}
+.hero .cd{margin-top:6px;font-size:15px;font-weight:800;color:#ffd479}
 
-.day{margin:0 0 10px}
-.day .dh{display:flex;align-items:center;gap:8px;margin:16px 0 6px;font-size:13px;color:var(--mut)}
+.day .dh{display:flex;align-items:center;gap:8px;margin:18px 0 6px;font-size:13px;color:var(--mut)}
 .day .dh b{color:var(--fg);font-size:15px}
 .day .dh .tag{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:99px;background:#1c2a44}
-
 .card{background:var(--card);border:1px solid var(--line);border-left-width:4px;
  border-radius:14px;padding:12px 14px;margin-bottom:8px}
-.card.Flight{border-left-color:var(--fl)} .card.Hotel{border-left-color:var(--ho)}
-.card.Off{border-left-color:var(--off)} .card.Standby{border-left-color:var(--sb)}
+.card.Flight{border-left-color:var(--fl)}.card.Hotel{border-left-color:var(--ho)}
+.card.Off{border-left-color:var(--off)}.card.Standby{border-left-color:var(--sb)}
 .card.Default{border-left-color:#64748b}
-.card .top{display:flex;align-items:baseline;gap:8px}
-.card .c{font-weight:800;font-size:17px} .card .r{color:#cfe0f7;font-weight:600;font-size:14px}
+.card .top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.card .c{font-weight:800;font-size:17px}.card .r{color:#cfe0f7;font-weight:600;font-size:13.5px}
 .card .t{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--mut);font-size:13px}
-.badge{font-size:10px;font-weight:800;letter-spacing:.06em;padding:2px 6px;border-radius:5px;
+.badge{font-size:10px;font-weight:800;padding:2px 6px;border-radius:5px;
  background:#2d2350;color:var(--dh);border:1px solid #42337a}
-.legs{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
-.leg{display:flex;gap:8px;font-size:13px;padding:3px 0;font-variant-numeric:tabular-nums}
-.leg .n{color:var(--acc);font-weight:700;min-width:46px}
-.leg .p{color:var(--fg);font-weight:600} .leg .x{color:var(--mut)}
+.badge.cap{background:#1d3326;color:#7bd68e;border-color:#2f5c3d}
+
+.legs{margin-top:9px;border-top:1px dashed var(--line);padding-top:9px}
+.leg{padding:5px 0;font-size:13px}
+.leg .l1{display:flex;gap:8px;align-items:baseline;font-variant-numeric:tabular-nums}
+.leg .n{color:var(--acc);font-weight:800;min-width:48px}
+.leg .p{font-weight:700}.leg .x{color:var(--mut)}
+.leg .ap{font-size:11.5px;color:var(--mut);padding-left:56px}
 .meta{margin-top:8px;font-size:12.5px;color:var(--mut);white-space:pre-wrap}
+
+details.crew{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+details.crew summary{font-size:12.5px;color:var(--acc);font-weight:700;cursor:pointer;list-style:none}
+details.crew summary::-webkit-details-marker{display:none}
+details.crew summary:before{content:"▸ ";}
+details.crew[open] summary:before{content:"▾ ";}
+.crewrow{display:flex;gap:8px;font-size:12.5px;padding:3px 0;align-items:baseline}
+.crewrow .ps{min-width:34px;font-weight:800;color:var(--acc);font-size:11px}
+.crewrow .nm{flex:1}.crewrow .cid{color:var(--mut);font-size:11px;font-variant-numeric:tabular-nums}
+.crewrow.me .nm{color:#ffd479;font-weight:700}
 
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0 18px}
 .cal .hd{text-align:center;font-size:11px;color:var(--mut);padding:4px 0;font-weight:700}
 .cal .c{aspect-ratio:1;border-radius:9px;background:var(--card);border:1px solid var(--line);
- display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
- font-size:12px;position:relative;padding:2px}
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:12px;padding:2px}
 .cal .c.empty{background:none;border-color:transparent}
 .cal .c .n{font-weight:700;font-size:12px}
-.cal .c .b{font-size:9px;font-weight:800;line-height:1.1;text-align:center;
- overflow:hidden;max-width:100%}
+.cal .c .b{font-size:9px;font-weight:800;line-height:1.05;text-align:center;overflow:hidden;max-width:100%}
 .cal .c.today{outline:2px solid var(--acc);outline-offset:1px}
-.cal .c[data-t=Flight]{background:#15314f} .cal .c[data-t=Hotel]{background:#3b2a12}
-.cal .c[data-t=Off]{background:#17351c} .cal .c[data-t=Standby]{background:#0d3139}
+.cal .c[data-t=Flight]{background:#15314f}.cal .c[data-t=Hotel]{background:#3b2a12}
+.cal .c[data-t=Off]{background:#17351c}.cal .c[data-t=Standby]{background:#0d3139}
 
-.pane{display:none} .pane.on{display:block}
-.empty-msg{color:var(--mut);text-align:center;padding:40px 10px;font-size:14px}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.stat .b{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat .b .v{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.stat .b .k{font-size:11.5px;color:var(--mut);margin-top:2px}
+.paybox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 14px;margin:10px 0}
+.pr{display:flex;align-items:baseline;gap:10px;padding:9px 0;font-size:13.5px;border-bottom:1px solid #1b2742}
+.pr:last-child{border-bottom:0}
+.pr span{color:var(--mut);flex:1}.pr b{font-variant-numeric:tabular-nums;font-weight:700}
+.pr.tot span{color:var(--fg);font-weight:700}.pr.tot b{color:#7bd68e;font-size:16px}
+.notice{background:#2a2113;border:1px solid #574424;border-radius:12px;padding:12px;
+ font-size:13px;color:#ffd479;margin:10px 0}
+
+.tabs{display:flex;gap:4px;position:fixed;left:0;right:0;bottom:0;z-index:9;
+ background:rgba(11,18,32,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+ padding:7px 8px calc(7px + var(--safe-b))}
+.tabs button{flex:1;background:none;border:0;color:var(--mut);font:700 10px/1.25 inherit;
+ padding:5px 1px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tabs button .ic{font-size:16px}
+.tabs button[aria-selected=true]{color:var(--acc);background:#16233c}
+.pane{display:none}.pane.on{display:block}
+.empty-msg{color:var(--mut);text-align:center;padding:36px 10px;font-size:14px}
 pre.txt{white-space:pre-wrap;font:13px/1.55 ui-monospace,Menlo,monospace;color:#cfe0f7;
- background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;overflow-x:auto}
+ background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
 
-.lock{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
-.lock h2{margin:0;font-size:20px} .lock p{color:var(--mut);font-size:14px;margin:0 0 4px;max-width:300px}
+.lock{min-height:82vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.lock h2{margin:0;font-size:22px;font-weight:800}
+.lock h2 span{color:var(--acc)}
+.lock p{color:var(--mut);font-size:14px;margin:0;max-width:300px}
 .lock input{background:var(--card);border:1px solid var(--line);color:var(--fg);
  border-radius:12px;padding:14px 16px;font-size:17px;width:min(300px,86vw);text-align:center}
-.lock button{background:var(--acc);color:#04203f;border:0;border-radius:12px;
- padding:13px 30px;font:700 16px inherit}
+.lock button{background:var(--acc);color:#04203f;border:0;border-radius:12px;padding:13px 30px;font:800 16px inherit}
 .err{color:#ff8e8e;font-size:13px;min-height:18px}
-.foot{text-align:center;color:#5b6b86;font-size:11px;padding:18px 0 4px}
+.foot{text-align:center;color:#5b6b86;font-size:11px;padding:16px 0 4px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div id="lock" class="lock">
-    <h2>Lịch bay</h2>
+    <h2>Ecrew<span>Ultra</span></h2>
     <p>Nhập mật khẩu để mở lịch. Máy sẽ nhớ cho những lần sau.</p>
-    <input id="pw" type="password" inputmode="text" autocomplete="current-password" placeholder="Mật khẩu">
+    <input id="pw" type="password" autocomplete="current-password" placeholder="Mật khẩu">
     <button id="go">Mở</button>
     <div class="err" id="err"></div>
   </div>
 
   <div id="app" hidden>
-    <header><h1>Lịch bay</h1><span class="sub" id="stamp"></span></header>
-
-    <div class="pane on" id="p-next">
-      <div id="hero"></div>
-      <div id="upcoming"></div>
-    </div>
-
-    <div class="pane" id="p-cal">
-      <div id="calwrap"></div>
-      <div id="list"></div>
-    </div>
-
+    <header><h1>Ecrew<span>Ultra</span></h1><span class="sub" id="stamp"></span></header>
+    <div class="pane on" id="p-next"><div id="hero"></div><div id="upcoming"></div></div>
+    <div class="pane" id="p-cal"><div id="calwrap"></div><div id="list"></div></div>
     <div class="pane" id="p-hotel"><div id="hotels"></div></div>
     <div class="pane" id="p-crew"><div id="crew"></div></div>
-
+    <div class="pane" id="p-pay"><div id="pay"></div></div>
     <div class="foot" id="foot"></div>
   </div>
 </div>
@@ -130,16 +155,27 @@ pre.txt{white-space:pre-wrap;font:13px/1.55 ui-monospace,Menlo,monospace;color:#
   <button data-p="cal" aria-selected="false"><span class="ic">🗓</span>Cả tháng</button>
   <button data-p="hotel" aria-selected="false"><span class="ic">🏨</span>Khách sạn</button>
   <button data-p="crew" aria-selected="false"><span class="ic">👥</span>Tổ bay</button>
+  <button data-p="pay" aria-selected="false"><span class="ic">⏱</span>Giờ &amp; lương</button>
 </nav>
 
 <script>
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const LSK='ecrew_key_v1';
 let DATA=null;
+const ME='41057';
+
+const AP={
+ HAN:{n:'Nội Bài',c:'Hà Nội',tz:7}, SGN:{n:'Tân Sơn Nhất',c:'TP.HCM',tz:7},
+ DAD:{n:'Đà Nẵng',c:'Đà Nẵng',tz:7}, PQC:{n:'Phú Quốc',c:'Phú Quốc',tz:7},
+ CXR:{n:'Cam Ranh',c:'Nha Trang',tz:7}, SIN:{n:'Changi',c:'Singapore',tz:8},
+ BKK:{n:'Suvarnabhumi',c:'Bangkok',tz:7}, HKG:{n:'Hong Kong',c:'Hong Kong',tz:8},
+ TPE:{n:'Đào Viên',c:'Đài Bắc',tz:8}
+};
+const apName=c=>AP[c]?AP[c].n+' · '+AP[c].c:c;
+const POS={CP:'Cơ trưởng',FO:'Cơ phó',CM:'Tiếp viên trưởng',BA:'Tiếp viên',CA:'Tiếp viên',SA:'Tiếp viên'};
 
 const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const b64e=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
-
 async function deriveKey(pw,salt,iter){
   const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
   return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:iter,hash:'SHA-256'},
@@ -151,34 +187,66 @@ async function decrypt(enc,key){
 }
 async function fetchEnc(){
   const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});
-  if(!r.ok) throw new Error('no data');
-  return r.json();
+  if(!r.ok) throw new Error('no data'); return r.json();
 }
 
-/* ---------- helpers ---------- */
 const DOW=['CN','T2','T3','T4','T5','T6','T7'];
 const pad=n=>String(n).padStart(2,'0');
 const D=s=>s?new Date(s.replace(' ','T')):null;
 const hm=s=>{const d=D(s);return d?pad(d.getHours())+':'+pad(d.getMinutes()):''};
 const dkey=s=>s?s.slice(0,10):'';
 const dlabel=s=>{const d=D(s);return DOW[d.getDay()]+', '+d.getDate()+'/'+(d.getMonth()+1)};
-const TYPE={Flight:'Bay',Hotel:'Khách sạn',Off:'Nghỉ',Standby:'Trực',Default:'Khác'};
+const TYPE={Flight:'Bay',Hotel:'Khách sạn',Off:'Ngày nghỉ',Standby:'Trực',Default:'Khác'};
+const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
-function countdown(to){
-  const ms=D(to)-new Date();
-  if(ms<0) return null;
-  const h=Math.floor(ms/3.6e6), m=Math.floor(ms%3.6e6/6e4);
-  if(h>=24){const d=Math.floor(h/24);return `còn ${d} ngày ${h%24} giờ`;}
-  return `còn ${h} giờ ${m} phút`;
+/* gio cat canh = gio khoi hanh chang dau */
+function takeoff(d){
+  if(!d.legs||!d.legs.length) return null;
+  const dep=d.legs[0].dep; if(!dep) return null;
+  const base=D(d.s); if(!base) return null;
+  const t=new Date(base);
+  t.setHours(+dep.slice(0,2),+dep.slice(2),0,0);
+  if(t<base) t.setDate(t.getDate()+1);
+  return t;
+}
+const shift=(t,min)=>new Date(t.getTime()+min*60000);
+const fmt=t=>pad(t.getHours())+':'+pad(t.getMinutes());
+const sameDay=(a,b)=>a.toDateString()===b.toDateString();
+
+function timesHTML(d){
+  const to=takeoff(d); if(!to) return '';
+  const br=shift(to,-150), mk=shift(to,-270);
+  const dd=t=>sameDay(t,to)?'':' <span class="x">(hôm trước)</span>';
+  return `<div class="times">
+    <div class="row r-mk"><span class="dot"></span><span class="t">${fmt(mk)}</span>
+      <span class="lb"><b>Bắt đầu chuẩn bị</b>trang điểm, quần áo${dd(mk)}</span></div>
+    <div class="row r-br"><span class="dot"></span><span class="t">${fmt(br)}</span>
+      <span class="lb"><b>Có mặt briefing</b>trước cất cánh 2 giờ 30${dd(br)}</span></div>
+    <div class="row r-to"><span class="dot"></span><span class="t">${fmt(to)}</span>
+      <span class="lb"><b>CẤT CÁNH</b>${d.legs[0].fl} · ${d.legs[0].from} → ${d.legs[0].to}</span></div>
+    ${d.report?`<div class="note">Giờ báo cáo eCrew ghi là <b>${d.report}</b>. Nếu sớm hơn giờ briefing ở trên thì đi theo giờ eCrew.</div>`:''}
+  </div>`;
 }
 
 function legsHTML(d){
   if(!d.legs||!d.legs.length) return '';
-  return '<div class="legs">'+d.legs.map(l=>
-    `<div class="leg"><span class="n">${l.fl}</span><span class="p">${l.from}</span>
-     <span class="x">${l.dep}</span><span class="x">→</span><span class="p">${l.to}</span>
-     <span class="x">${l.arr}</span></div>`).join('')+'</div>';
+  return '<div class="legs">'+d.legs.map(l=>{
+    const tzd=(AP[l.to]?.tz??7)-(AP[l.from]?.tz??7);
+    const loc=tzd?` <span class="x">· giờ ${l.to} ${tzd>0?'+':''}${tzd}h</span>`:'';
+    return `<div class="leg"><div class="l1"><span class="n">${l.fl}</span>
+      <span class="p">${l.from}</span><span class="x">${l.dep}</span><span class="x">→</span>
+      <span class="p">${l.to}</span><span class="x">${l.arr}</span>${loc}</div>
+      <div class="ap">${apName(l.from)} → ${apName(l.to)}</div>
+      ${l.crew&&l.crew.length?crewDetails(l.crew,l.fl):''}</div>`;
+  }).join('')+'</div>';
 }
+function crewDetails(crew,fl){
+  const rows=crew.map(c=>`<div class="crewrow${c.cid==ME?' me':''}">
+    <span class="ps">${c.pos}</span><span class="nm">${esc(c.name)}${c.dhc?' <span class="badge">DHC</span>':''}${c.pic?' <span class="badge cap">PIC</span>':''}</span>
+    <span class="cid">${c.cid}</span></div>`).join('');
+  return `<details class="crew"><summary>Tổ bay chuyến ${fl} (${crew.length})</summary>${rows}</details>`;
+}
+
 function cardHTML(d){
   const dh=d.dh?'<span class="badge">DHC</span>':'';
   const name=d.type==='Hotel'&&d.hotel?d.hotel.name:(d.code||TYPE[d.type]||d.type);
@@ -188,118 +256,167 @@ function cardHTML(d){
     const h=d.hotel;
     extra=`<div class="meta">Nhận phòng ${h.in||'—'} · Trả phòng ${h.out||'—'}`+
       (h.tel?`\n☎ ${h.tel}`:'')+(h.addr?`\n${h.addr}`:'')+'</div>';
-  }else if(d.report){
+  }else if(d.type!=='Flight'&&d.report){
     extra=`<div class="meta">Báo cáo ${d.report} · Kết thúc ${d.debrief||'—'}${d.loc?' · '+d.loc:''}</div>`;
   }
+  const cap=d.captain?`<div class="meta">Cơ trưởng: <b style="color:#7bd68e">${esc(d.captain)}</b></div>`:'';
   return `<div class="card ${d.type}">
-    <div class="top"><span class="c">${name}</span><span class="r">${rt}</span> ${dh}
-    <span class="t">${hm(d.s)}–${hm(d.e)}</span></div>
-    ${legsHTML(d)}${extra}</div>`;
+    <div class="top"><span class="c">${esc(name)}</span><span class="r">${rt}</span>${dh}
+      <span class="t">${hm(d.s)}–${hm(d.e)}</span></div>
+    ${d.type==='Flight'?timesHTML(d):''}${cap}${legsHTML(d)}${extra}</div>`;
 }
 
-/* ---------- render ---------- */
+/* gio bay (block) = tong thoi gian tung chang */
+function legMin(l){
+  if(!l.dep||!l.arr) return 0;
+  let a=+l.dep.slice(0,2)*60+ +l.dep.slice(2);
+  let b=+l.arr.slice(0,2)*60+ +l.arr.slice(2);
+  if(b<a) b+=1440;
+  return b-a;
+}
+const blockMin=d=>(d.legs||[]).reduce((s,l)=>s+legMin(l),0);
+const PAY={base:7000000,makeup:300000,phone:300000,stationery:300000,uniform:410000,
+  hourly:254000,overThreshold:85,training:381000,sector:127000,ferry:76200,
+  special:381000,quality:7690000,guaranteed:19500000,score:100};
+const hhmm=m=>Math.floor(m/60)+'h'+pad(m%60);
+
 function render(){
   const ds=DATA.duties||[];
-  $('#stamp').textContent='Cập nhật '+(DATA.gen?new Date(DATA.gen).toLocaleString('vi-VN',
+  $('#stamp').innerHTML='Cập nhật<br>'+(DATA.gen?new Date(DATA.gen).toLocaleString('vi-VN',
       {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—');
-
   const now=new Date();
   const next=ds.find(d=>D(d.e)>now&&d.type!=='Off')||null;
   if(next){
-    const cd=countdown(next.s);
+    const to=takeoff(next);
+    const ms=(to||D(next.s))-now;
+    let cd=null;
+    if(ms>0){const h=Math.floor(ms/3.6e6),mi=Math.floor(ms%3.6e6/6e4);
+      cd=h>=24?`còn ${Math.floor(h/24)} ngày ${h%24} giờ`:`còn ${h} giờ ${mi} phút`;}
     const nm=next.type==='Hotel'&&next.hotel?next.hotel.name:(next.code||TYPE[next.type]);
     $('#hero').innerHTML=`<div class="hero">
       <div class="lbl">${D(next.s)>now?'Chuyến kế tiếp':'Đang diễn ra'}</div>
-      <div class="code">${nm}</div>
-      <div class="route">${next.route||next.loc||''}</div>
+      <div class="code">${esc(nm)}</div><div class="route">${next.route||apName(next.loc)||''}</div>
       <div class="when">${dlabel(next.s)} · ${hm(next.s)} – ${hm(next.e)}</div>
-      ${cd?`<div class="cd">${cd}</div>`:''}
-      ${next.report?`<div class="rep">Giờ báo cáo <b>${next.report}</b></div>`:''}
-      ${legsHTML(next)}</div>`;
-  }else{
-    $('#hero').innerHTML='<div class="empty-msg">Không còn chuyến nào sắp tới trong kỳ này.</div>';
-  }
+      ${cd?`<div class="cd">${cd}</div>`:''}</div>
+      ${next.type==='Flight'?timesHTML(next):''}
+      ${next.captain?`<div class="card Flight"><div class="meta">Cơ trưởng: <b style="color:#7bd68e">${esc(next.captain)}</b></div>${legsHTML(next)}</div>`:legsHTML(next)}`;
+  }else $('#hero').innerHTML='<div class="empty-msg">Không còn chuyến nào sắp tới trong kỳ này.</div>';
 
-  const up=ds.filter(d=>D(d.e)>now).slice(0,12);
-  $('#upcoming').innerHTML=groupHTML(up);
+  $('#upcoming').innerHTML=groupHTML(ds.filter(d=>D(d.e)>now).slice(0,10));
   $('#list').innerHTML=groupHTML(ds);
   $('#calwrap').innerHTML=calHTML(ds);
 
   const hs=ds.filter(d=>d.hotel);
-  $('#hotels').innerHTML=hs.length?hs.map(d=>{
-    const h=d.hotel;
+  $('#hotels').innerHTML=hs.length?hs.map(d=>{const h=d.hotel;
     return `<div class="day"><div class="dh"><b>${dlabel(d.s)}</b><span class="tag">${d.loc||''}</span></div>
-      <div class="card Hotel"><div class="top"><span class="c">${h.name||'—'}</span></div>
+      <div class="card Hotel"><div class="top"><span class="c">${esc(h.name||'—')}</span></div>
       <div class="meta">Nhận ${h.in||'—'} ${h.inDate||''}\nTrả ${h.out||'—'} ${h.outDate||''}`+
       (h.tel?`\n☎ ${h.tel}`:'')+(h.addr?`\n${h.addr}`:'')+
       (h.toAirport?`\nXe ra sân bay: ${h.toAirport}`:'')+`</div></div></div>`;
   }).join(''):'<div class="empty-msg">Kỳ này không có layover khách sạn.</div>';
 
-  $('#crew').innerHTML=DATA.crew&&DATA.crew.trim()
-    ? '<pre class="txt">'+esc(DATA.crew)+'</pre>'
-    : '<div class="empty-msg">Chưa có dữ liệu tổ bay.</div>';
+  const fls=(DATA.flights||[]).filter(f=>f.crew&&f.crew.length);
+  $('#crew').innerHTML=fls.length?fls.map(f=>`<div class="day">
+      <div class="dh"><b>${f.date}</b> <span>${f.fl} · ${f.from}→${f.to}</span>
+      <span class="tag">${f.crew.length} người</span></div>
+      <div class="card Flight">${f.crew.map(c=>`<div class="crewrow${c.cid==ME?' me':''}">
+        <span class="ps">${c.pos}</span><span class="nm">${esc(c.name)}${c.dhc?' <span class="badge">DHC</span>':''}${c.pic?' <span class="badge cap">PIC</span>':''}</span>
+        <span class="cid">${c.cid}</span></div>`).join('')}</div></div>`).join('')
+    :'<div class="empty-msg">Chưa có dữ liệu tổ bay.</div>';
+
+  const flights=ds.filter(d=>d.type==='Flight');
+  let comH=0, ferH=0, sectors=0;
+  flights.forEach(d=>(d.legs||[]).forEach(l=>{
+    const m=legMin(l); sectors++;
+    if(d.dh) ferH+=m/60; else comH+=m/60;
+  }));
+  const dutyMin=ds.filter(d=>d.type!=='Off').reduce((s,d)=>{
+    const a=D(d.s),b=D(d.e);return s+(a&&b?(b-a)/60000:0)},0);
+
+  const P=PAY;
+  const fixed=P.base+P.makeup+P.phone+P.stationery+P.uniform;
+  const hNorm=Math.min(comH,P.overThreshold), hOver=Math.max(0,comH-P.overThreshold);
+  const payHour=hNorm*P.hourly + hOver*P.hourly*1.3;
+  const paySector=sectors*P.sector;
+  const payFerry=ferH*P.ferry;
+  const II=(payHour+paySector+payFerry+P.quality)*(P.score/100);
+  const A=fixed+II;
+  const applied=Math.max(A,P.guaranteed);
+  const vnd=n=>Math.round(n).toLocaleString('vi-VN')+'đ';
+
+  $('#pay').innerHTML=`<div class="stat">
+      <div class="b"><div class="v">${hhmm(Math.round(comH*60))}</div><div class="k">Giờ bay thương mại</div></div>
+      <div class="b"><div class="v">${sectors}</div><div class="k">Số chặng</div></div>
+      <div class="b"><div class="v">${hhmm(Math.round(ferH*60))}</div><div class="k">Giờ bay chuyển sân (DHC)</div></div>
+      <div class="b"><div class="v">${hhmm(Math.round(dutyMin))}</div><div class="k">Giờ làm nhiệm vụ</div></div>
+    </div>
+    <div class="paybox">
+      <div class="pr"><span>Thu nhập cố định</span><b>${vnd(fixed)}</b></div>
+      <div class="pr"><span>Lương giờ bay · ${comH.toFixed(2)}h × ${P.hourly.toLocaleString('vi-VN')}</span><b>${vnd(payHour)}</b></div>
+      <div class="pr"><span>Lương chặng bay · ${sectors} × ${P.sector.toLocaleString('vi-VN')}</span><b>${vnd(paySector)}</b></div>
+      ${ferH>0?`<div class="pr"><span>Giờ bay chuyển sân · ${ferH.toFixed(2)}h × ${P.ferry.toLocaleString('vi-VN')}</span><b>${vnd(payFerry)}</b></div>`:''}
+      <div class="pr"><span>Thưởng ý thức chất lượng</span><b>${vnd(P.quality)}</b></div>
+      ${P.score!==100?`<div class="pr"><span>Hệ số chất lượng ${P.score}/100</span><b></b></div>`:''}
+      <div class="pr tot"><span>Tạm tính trước thuế</span><b>${vnd(A)}</b></div>
+      ${A<P.guaranteed?`<div class="pr"><span>Thu nhập đảm bảo cao hơn</span><b>${vnd(P.guaranteed)}</b></div>`:''}
+      <div class="pr tot"><span>Áp dụng trong tháng</span><b>${vnd(applied)}</b></div>
+    </div>
+    <div class="notice">Đây là <b>ước tính trước thuế</b>, dựa trên đơn giá bậc CM4 trong phiếu lương tháng 9/2026.
+      Chưa gồm layover, phụ cấp vị trí và các khoản truy lĩnh. Chưa trừ BHXH, công đoàn và thuế TNCN.
+      Lịch bay chưa bay xong thì con số còn thay đổi.</div>
+    <div class="notice">Bài phát thanh chưa có. Gửi bài mẫu thì mỗi chuyến sẽ tự điền sân bay,
+      tên cơ trưởng và giờ địa phương.</div>`;
 
   $('#foot').textContent='Kỳ '+(DATA.period?.start||'')+' → '+(DATA.period?.end||'');
 }
-const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
 function groupHTML(list){
   if(!list.length) return '<div class="empty-msg">Trống.</div>';
-  const by={};
-  list.forEach(d=>{(by[dkey(d.s)] ||= []).push(d)});
+  const by={};list.forEach(d=>{(by[dkey(d.s)]||=[]).push(d)});
   const today=new Date().toISOString().slice(0,10);
-  return Object.keys(by).sort().map(k=>{
-    const tag=k===today?'<span class="tag">Hôm nay</span>':'';
-    return `<div class="day"><div class="dh"><b>${dlabel(k+'T00:00:00')}</b>${tag}</div>
-      ${by[k].map(cardHTML).join('')}</div>`;
-  }).join('');
+  return Object.keys(by).sort().map(k=>`<div class="day">
+    <div class="dh"><b>${dlabel(k+'T00:00:00')}</b>${k===today?'<span class="tag">Hôm nay</span>':''}</div>
+    ${by[k].map(cardHTML).join('')}</div>`).join('');
 }
-
+const rank=d=>({Flight:4,Standby:3,Hotel:2,Off:1}[d.type]||0);
 function calHTML(ds){
   if(!ds.length) return '';
-  const first=D(ds[0].s), last=D(ds[ds.length-1].e);
-  const y=first.getFullYear(), m=first.getMonth();
-  const start=new Date(y,m,1), end=new Date(last.getFullYear(),last.getMonth()+1,0);
-  const by={};
-  ds.forEach(d=>{const k=dkey(d.s); if(!by[k]||rank(d)>rank(by[k])) by[k]=d});
+  const first=D(ds[0].s),last=D(ds[ds.length-1].e);
+  const y=first.getFullYear(),m=first.getMonth();
+  const end=new Date(last.getFullYear(),last.getMonth()+1,0);
+  const by={};ds.forEach(d=>{const k=dkey(d.s);if(!by[k]||rank(d)>rank(by[k]))by[k]=d});
   let h='<div class="cal">'+DOW.map(d=>`<div class="hd">${d}</div>`).join('');
-  const cur=new Date(start); cur.setDate(1-start.getDay());
+  const cur=new Date(y,m,1);cur.setDate(1-cur.getDay());
   const today=new Date().toISOString().slice(0,10);
-  while(cur<=end||cur.getDay()!==0){
+  while(true){
     const k=cur.toISOString().slice(0,10);
-    const inRange=cur>=new Date(y,m,1)&&cur<=end;
+    const inR=cur>=new Date(y,m,1)&&cur<=end;
     const d=by[k];
-    if(!inRange){h+='<div class="c empty"></div>'}
+    if(!inR) h+='<div class="c empty"></div>';
     else{
-      const lbl=d?(d.type==='Flight'?(d.code||'BAY'):d.type==='Hotel'?'KS':
-                   d.type==='Off'?'OFF':d.type==='Standby'?'SBY':'•'):'';
+      const lbl=d?(d.type==='Flight'?(d.code||'BAY'):d.type==='Hotel'?'KS':d.type==='Off'?'OFF':d.type==='Standby'?'SBY':'•'):'';
       h+=`<div class="c ${k===today?'today':''}" ${d?`data-t="${d.type}"`:''}>
-          <span class="n">${cur.getDate()}</span><span class="b">${lbl}</span></div>`;
+        <span class="n">${cur.getDate()}</span><span class="b">${lbl}</span></div>`;
     }
     cur.setDate(cur.getDate()+1);
     if(cur>end&&cur.getDay()===0) break;
   }
   return h+'</div>';
 }
-const rank=d=>({Flight:4,Standby:3,Hotel:2,Off:1}[d.type]||0);
 
-/* ---------- unlock ---------- */
 async function boot(){
-  const saved=localStorage.getItem(LSK);
-  if(!saved) return;
+  const saved=localStorage.getItem(LSK); if(!saved) return;
   try{
     const enc=await fetchEnc();
     const key=await crypto.subtle.importKey('raw',b64d(saved),{name:'AES-GCM'},true,['decrypt']);
     DATA=await decrypt(enc,key);
-    localStorage.setItem('ecrew_cache',JSON.stringify(DATA));
+    try{localStorage.setItem('ecrew_cache',JSON.stringify(DATA))}catch(e){}
     show();
   }catch(e){
-    const c=localStorage.getItem('ecrew_cache');
-    if(c){DATA=JSON.parse(c);show();}
+    try{const c=localStorage.getItem('ecrew_cache');if(c){DATA=JSON.parse(c);show();}}catch(_){}
   }
 }
-function show(){ $('#lock').hidden=true; $('#app').hidden=false; $('#tabs').hidden=false; render(); }
-
+function show(){$('#lock').hidden=true;$('#app').hidden=false;$('#tabs').hidden=false;render();}
 $('#go').onclick=async()=>{
   const pw=$('#pw').value; if(!pw) return;
   $('#err').textContent='Đang mở…';
@@ -307,21 +424,15 @@ $('#go').onclick=async()=>{
     const enc=await fetchEnc();
     const key=await deriveKey(pw,b64d(enc.salt),enc.iter||210000);
     DATA=await decrypt(enc,key);
-    const raw=await crypto.subtle.exportKey('raw',key);
-    localStorage.setItem(LSK,b64e(raw));
-    localStorage.setItem('ecrew_cache',JSON.stringify(DATA));
-    $('#err').textContent=''; show();
-  }catch(e){ $('#err').textContent='Mật khẩu không đúng hoặc chưa có dữ liệu.'; }
+    localStorage.setItem(LSK,b64e(await crypto.subtle.exportKey('raw',key)));
+    try{localStorage.setItem('ecrew_cache',JSON.stringify(DATA))}catch(e){}
+    $('#err').textContent='';show();
+  }catch(e){$('#err').textContent='Mật khẩu không đúng hoặc chưa có dữ liệu.';}
 };
 $('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('#go').click()});
-
-$('#tabs').onclick=e=>{
-  const b=e.target.closest('button'); if(!b) return;
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   $$('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
-  $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));
-  scrollTo(0,0);
-};
-
+  $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));scrollTo(0,0);};
 setInterval(()=>{if(DATA)render()},60000);
 boot();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});

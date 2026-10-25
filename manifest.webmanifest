@@ -1,6 +1,6 @@
 {
- "name": "Lịch bay",
- "short_name": "Lịch bay",
+ "name": "EcrewUltra",
+ "short_name": "EcrewUltra",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
