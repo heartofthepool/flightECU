@@ -283,10 +283,6 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 </main>
 
-</div>
-
-</div>
-
 <nav class="tabs" id="tabs" hidden><div class="in">
   <button data-p="sched" aria-selected="true"><span class="ic">🗓</span>Lịch bay</button>
   <button data-p="hotel" aria-selected="false"><span class="ic">🏨</span>Khách sạn</button>
@@ -312,9 +308,26 @@ const BASE_TZ=7;   /* eCrew hien gio theo Local Base (HAN) */
 const AP={
  HAN:{n:'Nội Bài',c:'Hà Nội',tz:7}, SGN:{n:'Tân Sơn Nhất',c:'Thành phố Hồ Chí Minh',tz:7},
  DAD:{n:'Đà Nẵng',c:'Đà Nẵng',tz:7}, PQC:{n:'Phú Quốc',c:'Phú Quốc',tz:7},
- CXR:{n:'Cam Ranh',c:'Khánh Hòa',tz:7}, SIN:{n:'Changi',c:'Singapore',tz:8},
- BKK:{n:'Suvarnabhumi',c:'Bangkok',tz:7}, HKG:{n:'Hong Kong',c:'Hồng Kông',tz:8},
- TPE:{n:'Đào Viên',c:'Đài Bắc',tz:8}
+ CXR:{n:'Cam Ranh',c:'Khánh Hòa',tz:7}, HPH:{n:'Cát Bi',c:'Hải Phòng',tz:7},
+ VII:{n:'Vinh',c:'Nghệ An',tz:7}, HUI:{n:'Phú Bài',c:'Huế',tz:7},
+ VCA:{n:'Cần Thơ',c:'Cần Thơ',tz:7}, UIH:{n:'Phù Cát',c:'Gia Lai',tz:7},
+ DLI:{n:'Liên Khương',c:'Lâm Đồng',tz:7}, VCL:{n:'Chu Lai',c:'Quảng Ngãi',tz:7},
+ THD:{n:'Thọ Xuân',c:'Thanh Hóa',tz:7}, VDO:{n:'Vân Đồn',c:'Quảng Ninh',tz:7},
+ TBB:{n:'Tuy Hòa',c:'Đắk Lắk',tz:7}, BMV:{n:'Buôn Ma Thuột',c:'Đắk Lắk',tz:7},
+ PXU:{n:'Pleiku',c:'Gia Lai',tz:7}, CAH:{n:'Cà Mau',c:'Cà Mau',tz:7},
+ SIN:{n:'Changi',c:'Singapore',tz:8}, BKK:{n:'Suvarnabhumi',c:'Bangkok',tz:7},
+ DMK:{n:'Don Mueang',c:'Bangkok',tz:7}, HKG:{n:'Hong Kong',c:'Hồng Kông',tz:8},
+ TPE:{n:'Đào Viên',c:'Đài Bắc',tz:8}, KHH:{n:'Cao Hùng',c:'Đài Loan',tz:8},
+ ICN:{n:'Incheon',c:'Seoul',tz:9}, PUS:{n:'Gimhae',c:'Busan',tz:9},
+ NRT:{n:'Narita',c:'Tokyo',tz:9}, HND:{n:'Haneda',c:'Tokyo',tz:9},
+ KIX:{n:'Kansai',c:'Osaka',tz:9}, NGO:{n:'Chubu',c:'Nagoya',tz:9},
+ PVG:{n:'Phố Đông',c:'Thượng Hải',tz:8}, CAN:{n:'Bạch Vân',c:'Quảng Châu',tz:8},
+ KUL:{n:'Kuala Lumpur',c:'Kuala Lumpur',tz:8}, REP:{n:'Siem Reap',c:'Siem Reap',tz:7},
+ PNH:{n:'Phnom Penh',c:'Phnom Penh',tz:7}, VTE:{n:'Wattay',c:'Viêng Chăn',tz:7},
+ MFM:{n:'Macau',c:'Ma Cao',tz:8}, CGK:{n:'Soekarno-Hatta',c:'Jakarta',tz:7},
+ MNL:{n:'Ninoy Aquino',c:'Manila',tz:8}, DEL:{n:'Indira Gandhi',c:'New Delhi',tz:5.5},
+ BOM:{n:'Chhatrapati Shivaji',c:'Mumbai',tz:5.5}, SYD:{n:'Kingsford Smith',c:'Sydney',tz:11},
+ MEL:{n:'Tullamarine',c:'Melbourne',tz:11}
 };
 const apN=c=>AP[c]?AP[c].n:c, apC=c=>AP[c]?AP[c].c:c, apTZ=c=>AP[c]?AP[c].tz:BASE_TZ;
 const apFull=c=>AP[c]?AP[c].n+' · '+AP[c].c:c;
