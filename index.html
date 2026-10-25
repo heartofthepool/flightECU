@@ -221,6 +221,8 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .pabtn{background:var(--card2);border:1px solid var(--line);color:var(--mut);
  border-radius:9px;padding:6px 11px;font:700 12px inherit}
 .pabtn[aria-pressed=true]{background:#16314f;color:var(--acc);border-color:#2b5582}
+.palabel{font-size:11px;font-weight:800;color:var(--acc);letter-spacing:.1em;
+ text-transform:uppercase;margin:14px 0 6px}
 .patext{white-space:pre-wrap;font:14px/1.65 inherit;background:var(--card);
  border:1px solid var(--line);border-radius:14px;padding:14px}
 .patext mark{background:#3a2d12;color:#ffd479;border-radius:3px;padding:0 3px;font-weight:700}
@@ -243,6 +245,17 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .stat .b{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px}
 .stat .b .v{font-size:22px;font-weight:800;letter-spacing:-.5px}
 .stat .b .k{font-size:11px;color:var(--mut);margin-top:2px}
+.mblk{margin:14px 0}
+.mblk h3{font-size:12px;color:var(--acc);letter-spacing:.09em;text-transform:uppercase;
+ font-weight:800;margin:0 0 8px}
+.mrow{display:flex;align-items:baseline;gap:10px;padding:11px 14px;background:var(--card);
+ border:1px solid var(--line);border-bottom:0;font-size:14px}
+.mrow:first-of-type{border-radius:13px 13px 0 0}
+.mrow:last-of-type{border-radius:0 0 13px 13px;border-bottom:1px solid var(--line)}
+.mrow span{color:var(--mut);flex:1}
+.mrow b{font-variant-numeric:tabular-nums;font-weight:800;font-size:17px}
+.mrow small{color:#64799a;font-size:11px;font-weight:600}
+.mnote{font-size:11.5px;color:#64799a;margin:8px 2px 0;line-height:1.5}
 .paybox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:2px 14px;margin:10px 0}
 .pr{display:flex;align-items:baseline;gap:10px;padding:9px 0;font-size:13.5px;border-bottom:1px solid #1b2742}
 .pr:last-child{border-bottom:0}.pr span{color:var(--mut);flex:1}
@@ -302,7 +315,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 
   <div id="app" hidden>
     <div class="pane on" id="p-sched"><div id="list"></div></div>
-    <div class="pane" id="p-hotel"><div id="hotels"></div></div>
+    <div class="pane" id="p-month"><div id="month"></div></div>
     <div class="pane" id="p-crew"><div id="crew"></div></div>
     <div class="pane" id="p-pay"><div id="pay"></div></div>
     <div class="foot" id="foot"></div>
@@ -312,7 +325,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 
 <nav class="tabs" id="tabs" hidden><div class="in">
   <button data-p="sched" aria-selected="true"><span class="ic">🗓</span>Lịch bay</button>
-  <button data-p="hotel" aria-selected="false"><span class="ic">🏨</span>Khách sạn</button>
+  <button data-p="month" aria-selected="false"><span class="ic">📊</span>Tháng này</button>
   <button data-p="crew" aria-selected="false"><span class="ic">👥</span>Tổ bay</button>
   <button data-p="pay" aria-selected="false"><span class="ic">⏱</span>Giờ &amp; lương</button>
 </div></nav>
@@ -333,15 +346,15 @@ const ME='41057';
 const BASE_TZ=7;   /* eCrew hien gio theo Local Base (HAN) */
 
 const AP={
- HAN:{n:'Nội Bài',c:'Hà Nội',tz:7}, SGN:{n:'Tân Sơn Nhất',c:'Thành phố Hồ Chí Minh',tz:7},
- DAD:{n:'Đà Nẵng',c:'Đà Nẵng',tz:7}, PQC:{n:'Phú Quốc',c:'Phú Quốc',tz:7},
- CXR:{n:'Cam Ranh',c:'Khánh Hòa',tz:7}, HPH:{n:'Cát Bi',c:'Hải Phòng',tz:7},
- VII:{n:'Vinh',c:'Nghệ An',tz:7}, HUI:{n:'Phú Bài',c:'Huế',tz:7},
- VCA:{n:'Cần Thơ',c:'Cần Thơ',tz:7}, UIH:{n:'Phù Cát',c:'Gia Lai',tz:7},
- DLI:{n:'Liên Khương',c:'Lâm Đồng',tz:7}, VCL:{n:'Chu Lai',c:'Quảng Ngãi',tz:7},
- THD:{n:'Thọ Xuân',c:'Thanh Hóa',tz:7}, VDO:{n:'Vân Đồn',c:'Quảng Ninh',tz:7},
- TBB:{n:'Tuy Hòa',c:'Đắk Lắk',tz:7}, BMV:{n:'Buôn Ma Thuột',c:'Đắk Lắk',tz:7},
- PXU:{n:'Pleiku',c:'Gia Lai',tz:7}, CAH:{n:'Cà Mau',c:'Cà Mau',tz:7},
+ HAN:{n:'Nội Bài',c:'Hà Nội',tz:7,vn:1}, SGN:{n:'Tân Sơn Nhất',c:'Thành phố Hồ Chí Minh',tz:7,vn:1},
+ DAD:{n:'Đà Nẵng',c:'Đà Nẵng',tz:7,vn:1}, PQC:{n:'Phú Quốc',c:'Phú Quốc',tz:7,vn:1},
+ CXR:{n:'Cam Ranh',c:'Khánh Hòa',tz:7,vn:1}, HPH:{n:'Cát Bi',c:'Hải Phòng',tz:7,vn:1},
+ VII:{n:'Vinh',c:'Nghệ An',tz:7,vn:1}, HUI:{n:'Phú Bài',c:'Huế',tz:7,vn:1},
+ VCA:{n:'Cần Thơ',c:'Cần Thơ',tz:7,vn:1}, UIH:{n:'Phù Cát',c:'Gia Lai',tz:7,vn:1},
+ DLI:{n:'Liên Khương',c:'Lâm Đồng',tz:7,vn:1}, VCL:{n:'Chu Lai',c:'Quảng Ngãi',tz:7,vn:1},
+ THD:{n:'Thọ Xuân',c:'Thanh Hóa',tz:7,vn:1}, VDO:{n:'Vân Đồn',c:'Quảng Ninh',tz:7,vn:1},
+ TBB:{n:'Tuy Hòa',c:'Đắk Lắk',tz:7,vn:1}, BMV:{n:'Buôn Ma Thuột',c:'Đắk Lắk',tz:7,vn:1},
+ PXU:{n:'Pleiku',c:'Gia Lai',tz:7,vn:1}, CAH:{n:'Cà Mau',c:'Cà Mau',tz:7,vn:1},
  SIN:{n:'Changi',c:'Singapore',tz:8}, BKK:{n:'Suvarnabhumi',c:'Bangkok',tz:7},
  DMK:{n:'Don Mueang',c:'Bangkok',tz:7}, HKG:{n:'Hong Kong',c:'Hồng Kông',tz:8},
  TPE:{n:'Đào Viên',c:'Đài Bắc',tz:8}, KHH:{n:'Cao Hùng',c:'Đài Loan',tz:8},
@@ -531,13 +544,14 @@ function openDetail(d){
   if(d.legs&&d.legs.length){
     h+=`<div class="sec"><h3>Phát thanh sau hạ cánh</h3>
       <div class="paheader" id="pasel">
-        <button class="pabtn" data-lang="vi" aria-pressed="true">Tiếng Việt</button>
-        <button class="pabtn" data-lang="en" aria-pressed="false">English</button>
-        ${d.legs.length>1?'<span style="flex:1"></span>'+d.legs.map((l,i)=>
-          `<button class="pabtn" data-leg="${i}" aria-pressed="${i===d.legs.length-1}">${l.to}</button>`).join(''):''}
+        ${d.legs.length>1?d.legs.map((l,i)=>
+          `<button class="pabtn" data-leg="${i}" aria-pressed="${i===d.legs.length-1}">Điểm đến ${l.to}</button>`).join(''):''}
       </div>
-      <div class="patext" id="patext"></div>
-      <button class="copy" id="pacopy">Sao chép bài phát thanh</button>
+      <div class="palabel">Tiếng Việt</div>
+      <div class="patext" id="patextvi"></div>
+      <div class="palabel">English</div>
+      <div class="patext" id="patexten"></div>
+      <button class="copy" id="pacopy">Sao chép cả hai bài</button>
       <div class="notice">Chỗ <mark>___</mark> là nhiệt độ và số băng chuyền, phải tự điền tại chỗ.
         Tên sân bay nên đối chiếu Mục 7.2 trong tài liệu hãng.</div>
     </div>`;
@@ -547,22 +561,21 @@ function openDetail(d){
   $('#detail').hidden=false;
   document.body.style.overflow='hidden';
   if(d.legs&&d.legs.length){
-    let lang='vi', li=d.legs.length-1;
+    let li=d.legs.length-1;
     const draw=()=>{
-      $('#patext').innerHTML=(lang==='vi'?paVI:paEN)(d,d.legs[li]);
-      $$('#pasel [data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+      $('#patextvi').innerHTML=paVI(d,d.legs[li]);
+      $('#patexten').innerHTML=paEN(d,d.legs[li]);
       $$('#pasel [data-leg]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.leg===li));
     };
     $('#pasel').onclick=e=>{
-      const b=e.target.closest('button'); if(!b) return;
-      if(b.dataset.lang) lang=b.dataset.lang;
-      if(b.dataset.leg!==undefined) li=+b.dataset.leg;
-      draw();
+      const b=e.target.closest('button'); if(!b||b.dataset.leg===undefined) return;
+      li=+b.dataset.leg; draw();
     };
     $('#pacopy').onclick=async()=>{
-      try{ await navigator.clipboard.writeText($('#patext').innerText);
+      const txt=$('#patextvi').innerText+'\n\n---\n\n'+$('#patexten').innerText;
+      try{ await navigator.clipboard.writeText(txt);
         $('#pacopy').textContent='Đã sao chép ✓';
-        setTimeout(()=>$('#pacopy').textContent='Sao chép bài phát thanh',1600);
+        setTimeout(()=>$('#pacopy').textContent='Sao chép cả hai bài',1800);
       }catch(e){ $('#pacopy').textContent='Không sao chép được'; }
     };
     draw();
@@ -700,7 +713,7 @@ async function forceRefresh(){
   const base='https://ntfy.sh/'+encodeURIComponent(DATA.ntfy), stBase=base+'-st';
   let since=Math.floor(t0/1000)-1, real=0, shown=0, gotRun=false, phase='wait';
   const finish=(note)=>{busyNow=false; setStamp('ok',note);
-    setTimeout(()=>{ if(!busyNow) setStamp(); },9000);};
+    setTimeout(()=>{ if(!busyNow) setStamp(); },300000);};
   setStamp('busy','Đang kết nối Mac mini');
   try{
     const sent=await fetch(base,{method:'POST',body:JSON.stringify({cmd:'refresh',req})});
@@ -785,18 +798,7 @@ function render(){
     else showModal('Chưa có lịch tháng tới đâu em yêu.<br>Anh yêu em 💛');
   };
 
-  const hs=ds.map((d,i)=>[d,i]).filter(([d])=>d.hotel);
-  $('#hotels').innerHTML=hs.length?hs.map(([d,i])=>{
-    const x=d.hotel;
-    return `<div class="grp Default"><div class="duty" data-i="${i}">
-      <div class="rep">${esc(x.name||'—')}</div>
-      <div class="lgs"><div class="lg"><span class="tm">${x.in||'—'}</span>
-        <span class="ar">${esc(x.inDate||'')}</span><span class="tm">${x.out||'—'}</span>
-        <span class="ar">${esc(x.outDate||'')}</span></div></div>
-      ${x.tel?`<div class="rep"><span>☎</span> ${esc(x.tel)}</div>`:''}
-      ${x.addr?`<div class="rep"><span>${esc(x.addr)}</span></div>`:''}
-    </div></div>`;
-  }).join(''):'<div class="empty-msg">Kỳ này không có layover khách sạn.</div>';
+  renderMonth(ds);
 
   const fls=(DATA.flights||[]).filter(f=>f.crew&&f.crew.length);
   $('#crew').innerHTML=fls.length?fls.map(f=>`<div class="sec">
@@ -815,10 +817,48 @@ $('#mok').onclick=()=>{$('#modal').hidden=true};
 $('#stamp').onclick=forceRefresh;
 $('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').hidden=true};
 
-$('#list').onclick=$('#hotels').onclick=e=>{
+$('#list').onclick=e=>{
   const b=e.target.closest('.duty'); if(!b||b.dataset.i===undefined) return;
   openDetail(DATA.duties[+b.dataset.i]);
 };
+
+
+const VN=c=>!!(AP[c]&&AP[c].vn);
+function monthStats(list){
+  let legs=0, mins=0, off=0, dhc=0, early=0, intl=0;
+  list.forEach(d=>{
+    if(d.type==='Off'){ off++; return; }
+    const to=takeoff(d);
+    if(to && shift(to,-270).getHours()<5) early++;
+    (d.legs||[]).forEach(l=>{
+      legs++; mins+=legMin(l);
+      if(d.dh) dhc++;
+      if(!VN(l.from)||!VN(l.to)) intl++;
+    });
+  });
+  return {legs,mins,off,dhc,early,intl};
+}
+function statBlock(title,st){
+  const row=(k,v,note)=>`<div class="mrow"><span>${k}${note?` <small>${note}</small>`:''}</span><b>${v}</b></div>`;
+  return `<div class="mblk"><h3>${title}</h3>
+    ${row('Chuyến bay',st.legs,'số chặng')}
+    ${row('Giờ bay',hhmm(st.mins))}
+    ${row('Ngày day off',st.off)}
+    ${row('Chặng DHC',st.dhc)}
+    ${row('Ngày phải dậy sớm',st.early,'chuẩn bị trước 05:00')}
+    ${row('Chặng bay quốc tế',st.intl)}
+  </div>`;
+}
+function renderMonth(ds){
+  const now=new Date();
+  const left=ds.filter(d=>D(d.e)>now);
+  $('#month').innerHTML=
+    statBlock('Tổng quan cả tháng', monthStats(ds))+
+    statBlock('Những chuyến bay còn lại', monthStats(left))+
+    `<div class="mnote">Giờ bay tính theo giờ khởi hành và hạ cánh của từng chặng.
+      "Ngày phải dậy sớm" đếm những ngày bay mà giờ bắt đầu chuẩn bị rơi trước 05:00 sáng.
+      "Chặng bay quốc tế" đếm chặng có điểm đi hoặc điểm đến ngoài Việt Nam.</div>`;
+}
 
 function renderPay(ds){
   const flights=ds.filter(d=>d.type==='Flight');
