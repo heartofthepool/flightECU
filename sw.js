@@ -1,19 +1,36 @@
-const C='ecrewultra-v3';
+const C='ecrewultra-v6';
 const SHELL=['./','./index.html','./manifest.webmanifest'];
+
 self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));
+  self.skipWaiting();
+  e.waitUntil(caches.open(C).then(c=>c.addAll(SHELL)).catch(()=>{}));
 });
+
 self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x))))
-    .then(()=>self.clients.claim()));
+  e.waitUntil(
+    caches.keys()
+      .then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x))))
+      .then(()=>self.clients.claim())
+  );
 });
+
+/* Luon uu tien ban moi tu mang; mat mang moi dung ban da luu. */
+function networkFirst(req){
+  return fetch(req).then(r=>{
+    if(r&&r.ok){ const cl=r.clone(); caches.open(C).then(c=>c.put(req,cl)); }
+    return r;
+  }).catch(()=>caches.match(req).then(r=>r||caches.match('./index.html')));
+}
+
 self.addEventListener('fetch',e=>{
-  const u=new URL(e.request.url);
-  if(u.pathname.endsWith('data.json')){
-    e.respondWith(fetch(e.request).then(r=>{
-      const cl=r.clone(); caches.open(C).then(c=>c.put(e.request,cl)); return r;
-    }).catch(()=>caches.match(e.request)));
+  const req=e.request;
+  if(req.method!=='GET') return;
+  const u=new URL(req.url);
+  const isPage = req.mode==='navigate'
+    || u.pathname.endsWith('/') || u.pathname.endsWith('index.html');
+  if(isPage || u.pathname.endsWith('data.json') || u.pathname.endsWith('sw.js')){
+    e.respondWith(networkFirst(req));
     return;
   }
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
+  e.respondWith(caches.match(req).then(r=>r||networkFirst(req)));
 });
