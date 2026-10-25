@@ -1,4 +1,4 @@
-const C='ecrewultra-v26';
+const C='ecrewultra-v27';
 const SHELL=['./','./index.html','./manifest.webmanifest','./icon.png','./apple-touch-icon.png'];
 
 self.addEventListener('install',e=>{
@@ -28,7 +28,7 @@ self.addEventListener('fetch',e=>{
   const u=new URL(req.url);
   const isPage = req.mode==='navigate'
     || u.pathname.endsWith('/') || u.pathname.endsWith('index.html');
-  if(isPage || u.pathname.endsWith('data.json') || u.pathname.endsWith('sw.js')){
+  if(isPage || u.pathname.endsWith('data.json') || u.pathname.endsWith('version.json') || u.pathname.endsWith('sw.js')){
     e.respondWith(networkFirst(req));
     return;
   }

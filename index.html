@@ -355,7 +355,29 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
+const BUILD='20261025-185546';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+
+/* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
+(async()=>{
+  try{
+    const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    const v=(await r.json()).build;
+    if(!v || v===BUILD){ sessionStorage.removeItem('reloaded'); return; }
+    if(sessionStorage.getItem('reloaded')===v) return;
+    sessionStorage.setItem('reloaded',v);
+    if('caches' in window){
+      const keys=await caches.keys();
+      await Promise.all(keys.map(k=>caches.delete(k)));
+    }
+    if('serviceWorker' in navigator){
+      const rs=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(rs.map(x=>x.unregister()));
+    }
+    location.reload();
+  }catch(e){}
+})();
 const LSK='ecrew_key_v1', CACHE='ecrew_cache';
 let DATA=null, CUR=null;
 const ME='41057';
@@ -910,7 +932,7 @@ function render(){
     :'<div class="empty-msg">Chưa có dữ liệu tổ bay.</div>';
 
   renderPay(ds);
-  $('#foot').textContent='Kỳ '+(DATA.period?.start||'')+' → '+(DATA.period?.end||'');
+  $('#foot').textContent='Kỳ '+(DATA.period?.start||'')+' → '+(DATA.period?.end||'')+' · bản '+BUILD;
 }
 
 function showModal(html){ $('#mtx').innerHTML=html; $('#modal').hidden=false; }
