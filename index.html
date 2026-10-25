@@ -26,7 +26,7 @@ html,body{margin:0;background:var(--bg);color:var(--fg);
 body{-webkit-font-smoothing:antialiased;overflow:hidden}
 #shell{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column}
 #hdr{flex:none;background:var(--bg);border-bottom:1px solid var(--line);
- padding:calc(10px + var(--st)) 14px 10px}
+ padding:calc(12px + env(safe-area-inset-top,0px)) 14px 10px}
 #hdr .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px}
 #scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .wrap{max-width:760px;margin:0 auto;padding:0 14px 20px}
@@ -91,12 +91,20 @@ header .sub:active{background:var(--card2)}
 .sttl.go{animation:sttlOut .5s ease forwards}
 @keyframes sttlIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
 @keyframes sttlOut{to{opacity:0;transform:scale(1.5) translateY(-12px)}}
-.pl{position:absolute;bottom:-14vh;font-size:26px;line-height:1;color:#7fc0ff;
- opacity:0;will-change:transform,opacity}
+.pl{position:absolute;bottom:-22vh;line-height:1;color:#8ec8ff;
+ opacity:0;will-change:transform,opacity;text-shadow:0 0 22px rgba(90,170,255,.45)}
 @keyframes fly{
-  0%{opacity:0;transform:translateY(0) rotate(-35deg) scale(.7)}
-  12%{opacity:1}
-  100%{opacity:0;transform:translateY(-135vh) rotate(-35deg) scale(1.25)}
+  0%{opacity:0;transform:translateY(0) rotate(-32deg) scale(.6)}
+  10%{opacity:1}
+  85%{opacity:1}
+  100%{opacity:0;transform:translateY(-150vh) rotate(-32deg) scale(1.9)}
+}
+.pl.big{color:#cfe6ff;text-shadow:0 0 60px rgba(120,190,255,.6)}
+@keyframes flybig{
+  0%{opacity:0;transform:translateY(0) rotate(-32deg) scale(.5)}
+  25%{opacity:1}
+  70%{opacity:1}
+  100%{opacity:0;transform:translateY(-165vh) rotate(-32deg) scale(4.2)}
 }
 
 /* ====== THE DUTY KIEU ECREW ====== */
@@ -145,13 +153,13 @@ header .sub:active{background:var(--card2)}
 /* ====== CHI TIET ====== */
 #detail{position:fixed;inset:0;background:var(--bg);z-index:30;overflow-y:auto;
  -webkit-overflow-scrolling:touch}
-.dhd{position:sticky;top:0;background:rgba(11,18,32,.96);backdrop-filter:blur(12px);
- border-bottom:1px solid var(--line);padding:calc(8px + var(--st)) 14px 10px;display:flex;gap:10px;align-items:center;z-index:2}
+.dhd{position:sticky;top:0;background:rgba(7,13,24,.97);backdrop-filter:blur(12px);
+ border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;display:flex;gap:10px;align-items:center;z-index:2}
 .dhd button{background:var(--card2);border:1px solid var(--line);color:var(--acc);
  font:800 16px inherit;padding:11px 18px;border-radius:12px;flex:none}
 .dhd button:active{background:#2b3f66}
 .dhd .t{font-weight:800;font-size:16px}
-.dbody{max-width:760px;margin:0 auto;padding:12px 14px calc(30px + var(--sb2))}
+.dbody{max-width:760px;margin:0 auto;padding:12px 14px calc(34px + env(safe-area-inset-bottom,0px))}
 .dtitle{font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1.1}
 .dsub{color:#cfe0f7;font-weight:600;font-size:15px;margin-top:2px}
 .ddate{color:var(--mut);font-size:13.5px;margin-top:4px}
@@ -221,7 +229,7 @@ header .sub:active{background:var(--card2)}
  font-size:12.5px;color:#ffd479;margin:10px 0;line-height:1.5}
 
 .tabs{flex:none;display:flex;gap:4px;z-index:20;background:var(--bg);
- border-top:1px solid var(--line);padding:7px 8px calc(7px + var(--sb2))}
+ border-top:1px solid var(--line);padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px))}
 .tabs .in{max-width:760px;margin:0 auto;display:flex;gap:4px;width:100%}
 .tabs button{flex:1;background:none;border:0;color:var(--mut);font:700 10px/1.25 inherit;
  padding:5px 1px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -767,19 +775,25 @@ $('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
 /* ---------- man hinh mo dau ---------- */
 function runSplash(){
   const sp=$('#splash'); if(!sp) return;
-  const N=26;
-  for(let i=0;i<N;i++){
+  const mk=(cls,size,left,dur,delay,anim)=>{
     const e=document.createElement('span');
-    e.className='pl'; e.textContent='\u2708';
-    e.style.left=(Math.random()*96)+'vw';
-    e.style.fontSize=(15+Math.random()*26)+'px';
-    e.style.opacity='0';
-    e.style.animation=`fly ${(0.75+Math.random()*0.5).toFixed(2)}s cubic-bezier(.3,0,.5,1) ${(1+Math.random()*0.45).toFixed(2)}s forwards`;
+    e.className='pl'+(cls?' '+cls:''); e.textContent='\u2708';
+    e.style.left=left+'vw'; e.style.fontSize=size;
+    e.style.animation=`${anim} ${dur}s cubic-bezier(.32,0,.5,1) ${delay}s forwards`;
     sp.appendChild(e);
-  }
+  };
+  /* lop 1: nhieu may bay vua */
+  for(let i=0;i<30;i++)
+    mk('', (34+Math.random()*52).toFixed(0)+'px', (Math.random()*94).toFixed(1),
+       (0.85+Math.random()*0.45).toFixed(2), (0.95+Math.random()*0.4).toFixed(2), 'fly');
+  /* lop 2: may bay khong lo phu kin man hinh */
+  [8,30,52,74,-4].forEach((lf,i)=>
+    mk('big', (26+Math.random()*16).toFixed(0)+'vw', lf,
+       (0.95).toFixed(2), (1.3+i*0.07).toFixed(2), 'flybig'));
+
   setTimeout(()=>$('#sttl').classList.add('go'),1000);
-  setTimeout(()=>sp.classList.add('out'),1500);
-  setTimeout(()=>{sp.hidden=true},2100);
+  setTimeout(()=>sp.classList.add('out'),2150);
+  setTimeout(()=>{sp.hidden=true},2750);
 }
 runSplash();
 boot();
