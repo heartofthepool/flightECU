@@ -137,6 +137,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
  border-radius:14px;margin-bottom:10px;overflow:hidden}
 .grp.Flight{border-left-color:var(--fl)}.grp.Off{border-left-color:var(--off)}
 .grp.Standby{border-left-color:var(--sb)}.grp.Default{border-left-color:#64748b}
+.grp.Training{border-left-color:#b388ff}
 .grp.none{border-left-color:#3a465e;opacity:.6}
 .grp.none .dayhd{padding:11px 13px}
 .grp.none .nolbl{margin-left:auto;font-size:11.5px;color:#6a7a96;font-weight:700}
@@ -385,7 +386,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261025-194202';
+const BUILD='20261025-200201';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -517,7 +518,8 @@ const D=s=>s?new Date(s.replace(' ','T')):null;
 const hm=s=>{const d=D(s);return d?pad(d.getHours())+':'+pad(d.getMinutes()):''};
 const dkey=s=>s?s.slice(0,10):'';
 const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-const TYPE={Flight:'Bay',Hotel:'Khách sạn',Off:'Ngày nghỉ',Standby:'Trực',Default:'Khác'};
+const TYPE={Flight:'Bay',Hotel:'Khách sạn',Off:'Ngày nghỉ',Standby:'Trực',
+  Training:'Huấn luyện',Default:'Khác'};
 const fmt=t=>pad(t.getHours())+':'+pad(t.getMinutes());
 const sameDay=(a,b)=>a.toDateString()===b.toDateString();
 function takeoff(d){
@@ -896,6 +898,15 @@ async function runRefresh(ui){
   const oldGen=DATA.gen, req=String(Date.now()), t0=Date.now();
   const base='https://ntfy.sh/'+encodeURIComponent(DATA.ntfy), stBase=base+'-st';
   let since=Math.floor(t0/1000)-1, real=0, shown=0, gotRun=false, phase='wait';
+  /* iOS dung JS khi khoa man hinh. Chi dem thoi gian app thuc su chay,
+     neu khong dong ho se nhay vot va bao nham "ban qua lau". */
+  let spent=0, tick=Date.now();
+  const bump=()=>{
+    const now=Date.now(), gap=now-tick;
+    tick=now;
+    spent += gap>20000 ? 1500 : gap;   /* bo qua khoang bi tam dung */
+    return spent;
+  };
   ui.start();
   try{
     const sent=await fetch(base,{method:'POST',body:JSON.stringify({cmd:'refresh',req})});
@@ -903,9 +914,10 @@ async function runRefresh(ui){
   }catch(e){ return {ok:false,msg:'Không gửi được lệnh tới Mac mini.<br>Kiểm tra mạng rồi thử lại.'}; }
 
   for(;;){
-    const el=Date.now()-t0;
-    if(!gotRun && el>90000) return {ok:false,msg:'Mac mini chưa phản hồi.<br>Kiểm tra máy có bật và nối mạng.'};
-    if(el>300000) return {ok:false,msg:'Mac mini bận quá lâu.<br>Thử lại sau ít phút.'};
+    const el=bump();
+    if(!gotRun && el>120000) return {ok:false,
+      msg:'Mac mini chưa phản hồi.<br>Kiểm tra máy có bật và nối mạng.'};
+    if(el>600000) return {ok:false,msg:'Mac mini bận quá lâu.<br>Thử lại sau ít phút.'};
     await sleep(1500);
     try{
       if(phase!=='pages'){
@@ -940,7 +952,10 @@ async function runRefresh(ui){
       }
     }catch(e){}
     if(phase==='pages') ui.prog(98);
-    else { shown=Math.min(95,Math.max(real,shown+0.4)); ui.prog(shown); }
+    else {
+      shown=Math.min(95,Math.max(real,shown+0.4));
+      ui.prog(shown, gotRun?undefined:'Đang chờ Mac mini ('+Math.round(el/1000)+'s)');
+    }
   }
 }
 
@@ -1111,10 +1126,11 @@ function payRange(off){
 const inRange=(d,r)=>{const k=dkey(d.s); return k>=r.from&&k<=r.to;};
 const dmy=k=>k?k.slice(8,10)+'/'+k.slice(5,7)+'/'+k.slice(0,4):'';
 function monthStats(list){
-  let legs=0, mins=0, off=0, dhc=0, early=0, intl=0, lay=0;
+  let legs=0, mins=0, off=0, dhc=0, early=0, intl=0, lay=0, tr=0;
   list.forEach(d=>{
     if(d.type==='Off'){ off++; return; }
     if(d.type==='Hotel'){ lay++; return; }
+    if(d.type==='Training'){ tr++; return; }
     const to=takeoff(d);
     if(to && shift(to,-270).getHours()<5) early++;
     (d.legs||[]).forEach(l=>{
@@ -1123,7 +1139,7 @@ function monthStats(list){
       if(!VN(l.from)||!VN(l.to)) intl++;
     });
   });
-  return {legs,mins,off,dhc,early,intl,lay};
+  return {legs,mins,off,dhc,early,intl,lay,tr};
 }
 function statBlock(title,st){
   const row=(k,v,note)=>`<div class="mrow"><span>${k}${note?` <small>${note}</small>`:''}</span><b>${v}</b></div>`;
@@ -1135,6 +1151,7 @@ function statBlock(title,st){
     ${row('Ngày phải dậy sớm',st.early,'chuẩn bị trước 05:00')}
     ${row('Chặng bay quốc tế',st.intl)}
     ${row('Ngày layover',st.lay,'nghỉ qua đêm ngoài căn cứ')}
+    ${st.tr?row('Ngày huấn luyện',st.tr):''}
   </div>`;
 }
 function expiryHTML(){
