@@ -1,4 +1,4 @@
-const C='ecrewultra-v27';
+const C='ecrewultra-v28';
 const SHELL=['./','./index.html','./manifest.webmanifest','./icon.png','./apple-touch-icon.png'];
 
 self.addEventListener('install',e=>{

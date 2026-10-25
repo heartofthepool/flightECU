@@ -355,7 +355,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261025-185546';
+const BUILD='20261025-190630';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -431,6 +431,7 @@ async function fetchEnc(){
 /* ---------- tien ich ---------- */
 const DOW=['CN','T2','T3','T4','T5','T6','T7'];
 const pad=n=>String(n).padStart(2,'0');
+const dmark=n=>n?'\u207a'+['\u2070','\u00b9','\u00b2','\u00b3'][n]||'':'';
 const D=s=>s?new Date(s.replace(' ','T')):null;
 const hm=s=>{const d=D(s);return d?pad(d.getHours())+':'+pad(d.getMinutes()):''};
 const dkey=s=>s?s.slice(0,10):'';
@@ -441,15 +442,19 @@ const sameDay=(a,b)=>a.toDateString()===b.toDateString();
 function takeoff(d){
   if(!d.legs||!d.legs.length||!d.legs[0].dep) return null;
   const b=D(d.s); if(!b) return null;
-  const t=new Date(b); t.setHours(+d.legs[0].dep.slice(0,2),+d.legs[0].dep.slice(2),0,0);
-  if(t<b) t.setDate(t.getDate()+1);
+  const l0=d.legs[0];
+  const t=new Date(b); t.setHours(+l0.dep.slice(0,2),+l0.dep.slice(2),0,0);
+  if(l0.dd) t.setDate(t.getDate()+l0.dd);
+  else if(t<b) t.setDate(t.getDate()+1);
   return t;
 }
 const shift=(t,m)=>new Date(t.getTime()+m*60000);
 function legMin(l){
   if(!l.dep||!l.arr) return 0;
-  let a=+l.dep.slice(0,2)*60+ +l.dep.slice(2), b=+l.arr.slice(0,2)*60+ +l.arr.slice(2);
-  if(b<a)b+=1440; return b-a;
+  let a=(l.dd||0)*1440 + (+l.dep.slice(0,2))*60 + (+l.dep.slice(2));
+  let b=(l.ad||0)*1440 + (+l.arr.slice(0,2))*60 + (+l.arr.slice(2));
+  if(b<a) b+=1440;
+  return b-a;
 }
 const hhmm=m=>Math.floor(m/60)+'h'+pad(Math.round(m%60));
 
@@ -546,8 +551,8 @@ function openDetail(d){
       d.legs.map(l=>{
         const df=apTZ(l.to)-apTZ(l.from);
         return `<div class="leg"><div class="l1"><span class="n">${l.fl}</span>
-          <span class="p">${l.from}</span><span class="x">${l.dep}</span><span class="x">→</span>
-          <span class="p">${l.to}</span><span class="x">${l.arr}</span>
+          <span class="p">${l.from}</span><span class="x">${l.dep}${dmark(l.dd)}</span><span class="x">→</span>
+          <span class="p">${l.to}</span><span class="x">${l.arr}${dmark(l.ad)}</span>
           <span class="x">· ${hhmm(legMin(l))}</span>${df?`<span class="x">· lệch ${df>0?'+':''}${df}h</span>`:''}</div>
           <div class="ap">${apFull(l.from)} → ${apFull(l.to)}</div></div>`;
       }).join('')+`</div></div>`;
@@ -676,7 +681,7 @@ function dutyHTML(d,i){
   if(d.legs&&d.legs.length){
     h+='<div class="lgs">'+d.legs.map(l=>`<div class="lg">
       <span class="fn">${l.fl}</span><span class="tm">${l.dep}</span>
-      <span class="ar">${l.from} ${l.to}</span><span class="tm">${l.arr}</span>
+      <span class="ar">${l.from} ${l.to}</span><span class="tm">${l.arr}${dmark(l.ad)}</span>
       ${d.dh?'<span class="dh">DHC</span>':''}</div>`).join('')+'</div>';
   }else{
     const nm=d.code||TYPE[d.type]||d.type;
