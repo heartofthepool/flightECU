@@ -114,20 +114,22 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .sttl.go{animation:sttlOut .5s ease forwards}
 @keyframes sttlIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
 @keyframes sttlOut{to{opacity:0;transform:scale(1.5) translateY(-12px)}}
-.pl{position:absolute;bottom:-22vh;line-height:1;color:#8ec8ff;
- opacity:0;will-change:transform,opacity;text-shadow:0 0 22px rgba(90,170,255,.45)}
+.pl{position:absolute;bottom:-22vh;line-height:0;color:#8ec8ff;
+ opacity:0;will-change:transform,opacity;
+ filter:drop-shadow(0 0 16px rgba(90,170,255,.5))}
+.pl svg{display:block;width:1em;height:1em;fill:currentColor}
 @keyframes fly{
-  0%{opacity:0;transform:translateY(0) rotate(-32deg) scale(.6)}
+  0%{opacity:0;transform:translateY(0) scale(.6)}
   10%{opacity:1}
   85%{opacity:1}
-  100%{opacity:0;transform:translateY(-150vh) rotate(-32deg) scale(1.9)}
+  100%{opacity:0;transform:translateY(-150vh) scale(1.9)}
 }
-.pl.big{color:#cfe6ff;text-shadow:0 0 60px rgba(120,190,255,.6)}
+.pl.big{color:#cfe6ff;filter:drop-shadow(0 0 46px rgba(120,190,255,.6))}
 @keyframes flybig{
-  0%{opacity:0;transform:translateY(0) rotate(-32deg) scale(.5)}
+  0%{opacity:0;transform:translateY(0) scale(.5)}
   25%{opacity:1}
   70%{opacity:1}
-  100%{opacity:0;transform:translateY(-165vh) rotate(-32deg) scale(4.2)}
+  100%{opacity:0;transform:translateY(-165vh) scale(4.2)}
 }
 
 /* ====== THE DUTY KIEU ECREW ====== */
@@ -346,9 +348,11 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 <div id="detail" hidden>
   <div class="dhd"><button id="back">‹ Quay lại</button><span class="t" id="dttl"></span></div>
   <div class="dbody" id="dbody"></div>
+</div>
 
 <div id="modal" hidden><div class="mbox">
   <div class="mtx" id="mtx"></div><button id="mok">Đóng</button></div>
+</div>
 
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -721,7 +725,14 @@ const CUTE=[
  "Ôi đứng đợi ecrew lâu mỏi chân quá",
  "Trước khi choa xem lịch choa tớ hun miếng"
 ];
-const pickCute=()=>CUTE[Math.floor(Math.random()*CUTE.length)];
+let lastCute=-1;
+function pickCute(){
+  if(CUTE.length<2) return CUTE[0];
+  let i;
+  do{ i=Math.floor(Math.random()*CUTE.length); }while(i===lastCute);
+  lastCute=i;
+  return CUTE[i];
+}
 const NO_NEW='Chồng vừa đi hỏi Ecrew thì nó bảo<br>chưa có lịch mới đâu yên châm 💛';
 
 /* giao dien chay tren nut "Cap nhat" */
@@ -733,11 +744,7 @@ const stampUI={
 /* giao dien chay tren mot nut bat ky, dung chinh nut do lam thanh tien do */
 function btnUI(sel,label,rotateMs){
   let phrase=pickCute(), last=Date.now();
-  const nextPhrase=()=>{
-    if(CUTE.length<2) return;
-    let c; do{ c=pickCute(); }while(c===phrase);
-    phrase=c;
-  };
+  const nextPhrase=()=>{ phrase=pickCute(); };
   const paint=p=>{
     const b=document.querySelector(sel); if(!b) return;
     b.classList.add('loading');
@@ -1062,11 +1069,16 @@ $('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
     requestAnimationFrame(()=>{const c=$('#paycur'); if(c) $('#scroll').scrollTop=c.offsetTop-6;});
   }};
 /* ---------- man hinh mo dau ---------- */
+const PLANE_SVG='<svg viewBox="0 0 24 24" aria-hidden="true">'
+  +'<path d="M12 1.6c.9 0 1.6 1.3 1.6 2.9v4.2l8.1 4.7v2.3l-8.1-2.4v4.6l2.6 1.9v1.9'
+  +'L12 20.9l-4.2 1.2v-1.9l2.6-1.9v-4.6L2.3 15.7v-2.3l8.1-4.7V4.5c0-1.6.7-2.9 1.6-2.9z"/></svg>';
+
 function runSplash(){
   const sp=$('#splash'); if(!sp) return;
   const mk=(cls,size,left,dur,delay,anim)=>{
     const e=document.createElement('span');
-    e.className='pl'+(cls?' '+cls:''); e.textContent='\u2708';
+    e.className='pl'+(cls?' '+cls:'');
+    e.innerHTML=PLANE_SVG;
     e.style.left=left+'vw'; e.style.fontSize=size;
     e.style.animation=`${anim} ${dur}s cubic-bezier(.32,0,.5,1) ${delay}s forwards`;
     sp.appendChild(e);
