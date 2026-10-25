@@ -137,8 +137,11 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
  border-radius:14px;margin-bottom:10px;overflow:hidden}
 .grp.Flight{border-left-color:var(--fl)}.grp.Off{border-left-color:var(--off)}
 .grp.Standby{border-left-color:var(--sb)}.grp.Default{border-left-color:#64748b}
+.grp.none{border-left-color:#3a465e;opacity:.6}
+.grp.none .dayhd{padding:11px 13px}
+.grp.none .nolbl{margin-left:auto;font-size:11.5px;color:#6a7a96;font-weight:700}
 .dayhd{display:flex;align-items:baseline;gap:8px;padding:10px 13px 2px}
-.dayhd .dd{font-size:20px;font-weight:800;line-height:1}
+.dayhd .dd{font-size:15.5px;font-weight:800;line-height:1.2;letter-spacing:-.2px}
 .dayhd .ww{font-size:12.5px;color:var(--mut);font-weight:700}
 .dayhd .tg{margin-left:auto;font-size:10px;padding:2px 7px;border-radius:99px;
  background:#1c2a44;color:var(--mut);font-weight:800}
@@ -341,7 +344,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
   <button data-p="sched" aria-selected="true"><span class="ic">🗓</span>Lịch bay</button>
   <button data-p="month" aria-selected="false"><span class="ic">📊</span>Tháng này</button>
   <button data-p="crew" aria-selected="false"><span class="ic">👥</span>Tổ bay</button>
-  <button data-p="pay" aria-selected="false"><span class="ic">⏱</span>Giờ &amp; lương</button>
+  <button data-p="pay" aria-selected="false"><span class="ic">⏱</span>Giờ bay</button>
 </div></nav>
 </div>
 
@@ -355,7 +358,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261025-190630';
+const BUILD='20261025-191940';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -430,6 +433,11 @@ async function fetchEnc(){
 
 /* ---------- tien ich ---------- */
 const DOW=['CN','T2','T3','T4','T5','T6','T7'];
+const DOWF=['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
+const fullDate=k=>{const d=D(k+'T00:00:00');
+  return DOWF[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();};
+const addDay=(k,n)=>{const d=D(k+'T00:00:00');d.setDate(d.getDate()+n);
+  return [d.getFullYear(),pad(d.getMonth()+1),pad(d.getDate())].join('-');};
 const pad=n=>String(n).padStart(2,'0');
 const dmark=n=>n?'\u207a'+['\u2070','\u00b9','\u00b2','\u00b3'][n]||'':'';
 const D=s=>s?new Date(s.replace(' ','T')):null;
@@ -666,8 +674,7 @@ function buildGroups(ds){
 function dutyHTML(d,i){
   const to=takeoff(d);
   const dt=D(d.s), today=new Date().toISOString().slice(0,10)===dkey(d.s);
-  let h=`<div class="dayhd"><span class="dd">${dt.getDate()}</span>
-    <span class="ww">${DOW[dt.getDay()]}</span>
+  let h=`<div class="dayhd"><span class="dd">${fullDate(dkey(d.s))}</span>
     ${today?'<span class="tg">HÔM NAY</span>':''}</div>`;
   if(to){
     h+=`<div class="prep">
@@ -903,18 +910,41 @@ function render(){
 
   const today=new Date().toISOString().slice(0,10);
   const groups=buildGroups(ds);
-  const past=[],future=[];
-  groups.forEach(g=>{
-    const last=g.items[g.items.length-1].d;
-    (dkey(last.e||last.s)<today?past:future).push(g);
+
+  const used=new Set();
+  ds.forEach(d=>{
+    let k=dkey(d.s); const kEnd=dkey(d.e||d.s);
+    for(let i=0;i<40 && k<=kEnd;i++){ used.add(k); k=addDay(k,1); }
   });
+
+  const items=groups.map(g=>({
+    k:dkey(g.items[0].d.s),
+    last:dkey(g.items[g.items.length-1].d.e||g.items[g.items.length-1].d.s),
+    html:groupHTML(g)
+  }));
+  if(ds.length){
+    const starts=ds.map(d=>dkey(d.s)).sort();
+    const ends=ds.map(d=>dkey(d.e||d.s)).sort();
+    let k=starts[0]; const last=ends[ends.length-1];
+    for(let i=0;i<400 && k<=last;i++){
+      if(!used.has(k)) items.push({k,last:k,html:
+        `<div class="grp none"><div class="dayhd">
+           <span class="dd">${fullDate(k)}</span>
+           <span class="nolbl">Không có lịch</span></div></div>`});
+      k=addDay(k,1);
+    }
+  }
+  items.sort((x,y)=>x.k<y.k?-1:x.k>y.k?1:0);
+
+  const past=[],future=[];
+  items.forEach(it=>{ (it.last<today?past:future).push(it); });
 
   let h='';
   if(past.length){
     h+=`<button class="morebtn" id="pastbtn">▾ Các chuyến bay trước (${past.length})</button>
-        <div id="pastwrap" hidden>${past.map(groupHTML).join('')}</div>`;
+        <div id="pastwrap" hidden>${past.map(x=>x.html).join('')}</div>`;
   }
-  h+=future.length?future.map(groupHTML).join('')
+  h+=future.length?future.map(x=>x.html).join('')
      :'<div class="empty-msg">Không còn chuyến nào sắp tới trong kỳ này.</div>';
   h+=`<button class="morebtn" id="nextbtn">Tải các chuyến bay sắp tới</button>`;
   $('#list').innerHTML=h;
@@ -1026,7 +1056,7 @@ function payBox(all,off){
   const A=fixed+II, applied=Math.max(A,P.guaranteed);
   const vnd=n=>Math.round(n).toLocaleString('vi-VN')+'đ';
   const empty=ds.length===0;
-  return `<div class="paymonth${off===0?' cur':''}" ${off===0?'id="paycur"':''}>
+  return `<div class="paymonth cur">
     <div class="pmhd"><span class="pmno">Tháng ${pr.month}</span>
       <span class="pmyr">${pr.year}</span>
       <span class="pmrg">${dmy(pr.from)} – ${dmy(pr.to)}</span></div>
@@ -1048,16 +1078,30 @@ function payBox(all,off){
   </div>`;
 }
 
+let payOff=0;
+function hasPayData(all,off){
+  const pr=payRange(off);
+  return all.some(d=>inRange(d,pr));
+}
 function renderPay(all){
-  $('#pay').innerHTML=[-1,0,1].map(o=>payBox(all,o)).join('')+
-    `<div class="mnote">Kỳ lương của một tháng tính từ <b>ngày 25 tháng trước</b>
-      đến <b>ngày 24 tháng đó</b>. Mở tab này luôn hiện tháng hiện tại,
-      kéo lên xem tháng trước, kéo xuống xem tháng sau.<br>
-      Ước tính <b>trước thuế</b> theo đơn giá bậc CM4 phiếu lương 9/2026.
-      Chưa gồm layover, phụ cấp vị trí, truy lĩnh. Chưa trừ BHXH, công đoàn, thuế TNCN.</div>`;
+  $('#pay').innerHTML=
+    `<button class="morebtn" id="payprev">▴ Tháng trước</button>`+
+    payBox(all,payOff)+
+    `<button class="morebtn" id="paynext">▾ Tháng sau</button>
+     <div class="mnote">Kỳ lương của một tháng tính từ <b>ngày 25 tháng trước</b>
+       đến <b>ngày 24 tháng đó</b>.<br>
+       Ước tính <b>trước thuế</b> theo đơn giá bậc CM4 phiếu lương 9/2026.
+       Chưa gồm layover, phụ cấp vị trí, truy lĩnh.
+       Chưa trừ BHXH, công đoàn, thuế TNCN.</div>`;
+  const go=step=>{
+    const t=payOff+step;
+    if(!hasPayData(all,t)){ showModal('Chưa có dữ liệu chình iu ạ 💛'); return; }
+    payOff=t; renderPay(all); $('#scroll').scrollTop=0;
+  };
+  $('#payprev').onclick=()=>go(-1);
+  $('#paynext').onclick=()=>go(1);
 }
 
-/* ---------- khoi dong ---------- */
 function show(){
   $('#lock').hidden=true; $('#app').hidden=false;
   $('#tabs').hidden=false; $('#hdr').hidden=false; render();
@@ -1092,9 +1136,7 @@ $('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   $$('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
   $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));
   $('#scroll').scrollTop=0;
-  if(b.dataset.p==='pay'){
-    requestAnimationFrame(()=>{const c=$('#paycur'); if(c) $('#scroll').scrollTop=c.offsetTop-6;});
-  }};
+  if(b.dataset.p==='pay'){ payOff=0; renderPay(DATA.duties||[]); }};
 /* ---------- man hinh mo dau ---------- */
 const PLANE_SVG='<svg viewBox="0 0 24 24" aria-hidden="true">'
   +'<path d="M12 1.6c.9 0 1.6 1.3 1.6 2.9v4.2l8.1 4.7v2.3l-8.1-2.4v4.6l2.6 1.9v1.9'
