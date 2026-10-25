@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lịch bay">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Lịch bay</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0b1220; --card:#131d31; --card2:#192741; --line:#243busy;
+  --line:#24334f; --fg:#eef3fb; --mut:#93a4c0; --acc:#4da3ff;
+  --fl:#2196f3; --ho:#ff9800; --off:#4caf50; --sb:#00bcd4; --dh:#b388ff;
+  --safe-t:env(safe-area-inset-top); --safe-b:env(safe-area-inset-bottom);
+}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);
+ font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+body{padding-top:var(--safe-t);padding-bottom:calc(64px + var(--safe-b));
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+header{padding:14px 0 6px;display:flex;align-items:baseline;gap:10px}
+header h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.2px}
+header .sub{font-size:12px;color:var(--mut);margin-left:auto}
+
+.hero{background:linear-gradient(160deg,#17raise,#1b2b4a);border-radius:18px;padding:18px;
+ margin:10px 0 16px;border:1px solid var(--line);
+ background:linear-gradient(160deg,#1a2a48,#141f36)}
+.hero .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.hero .code{font-size:34px;font-weight:800;letter-spacing:-1px;margin:6px 0 2px}
+.hero .route{font-size:17px;color:#cfe0f7;font-weight:600}
+.hero .when{margin-top:12px;font-size:14px;color:var(--mut)}
+.hero .cd{margin-top:10px;font-size:15px;font-weight:700;color:#ffd479}
+.hero .rep{display:inline-block;margin-top:12px;background:#0d1729;border:1px solid var(--line);
+ border-radius:10px;padding:8px 12px;font-size:14px}
+.hero .rep b{color:#fff;font-size:17px}
+
+.tabs{display:flex;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:9;
+ background:rgba(11,18,32,.93);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+ padding:8px 12px calc(8px + var(--safe-b))}
+.tabs button{flex:1;background:none;border:0;color:var(--mut);font:600 11px/1.3 inherit;
+ padding:6px 2px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tabs button .ic{font-size:17px}
+.tabs button[aria-selected=true]{color:var(--acc);background:#16233c}
+
+.day{margin:0 0 10px}
+.day .dh{display:flex;align-items:center;gap:8px;margin:16px 0 6px;font-size:13px;color:var(--mut)}
+.day .dh b{color:var(--fg);font-size:15px}
+.day .dh .tag{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:99px;background:#1c2a44}
+
+.card{background:var(--card);border:1px solid var(--line);border-left-width:4px;
+ border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.card.Flight{border-left-color:var(--fl)} .card.Hotel{border-left-color:var(--ho)}
+.card.Off{border-left-color:var(--off)} .card.Standby{border-left-color:var(--sb)}
+.card.Default{border-left-color:#64748b}
+.card .top{display:flex;align-items:baseline;gap:8px}
+.card .c{font-weight:800;font-size:17px} .card .r{color:#cfe0f7;font-weight:600;font-size:14px}
+.card .t{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--mut);font-size:13px}
+.badge{font-size:10px;font-weight:800;letter-spacing:.06em;padding:2px 6px;border-radius:5px;
+ background:#2d2350;color:var(--dh);border:1px solid #42337a}
+.legs{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+.leg{display:flex;gap:8px;font-size:13px;padding:3px 0;font-variant-numeric:tabular-nums}
+.leg .n{color:var(--acc);font-weight:700;min-width:46px}
+.leg .p{color:var(--fg);font-weight:600} .leg .x{color:var(--mut)}
+.meta{margin-top:8px;font-size:12.5px;color:var(--mut);white-space:pre-wrap}
+
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0 18px}
+.cal .hd{text-align:center;font-size:11px;color:var(--mut);padding:4px 0;font-weight:700}
+.cal .c{aspect-ratio:1;border-radius:9px;background:var(--card);border:1px solid var(--line);
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+ font-size:12px;position:relative;padding:2px}
+.cal .c.empty{background:none;border-color:transparent}
+.cal .c .n{font-weight:700;font-size:12px}
+.cal .c .b{font-size:9px;font-weight:800;line-height:1.1;text-align:center;
+ overflow:hidden;max-width:100%}
+.cal .c.today{outline:2px solid var(--acc);outline-offset:1px}
+.cal .c[data-t=Flight]{background:#15314f} .cal .c[data-t=Hotel]{background:#3b2a12}
+.cal .c[data-t=Off]{background:#17351c} .cal .c[data-t=Standby]{background:#0d3139}
+
+.pane{display:none} .pane.on{display:block}
+.empty-msg{color:var(--mut);text-align:center;padding:40px 10px;font-size:14px}
+pre.txt{white-space:pre-wrap;font:13px/1.55 ui-monospace,Menlo,monospace;color:#cfe0f7;
+ background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;overflow-x:auto}
+
+.lock{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.lock h2{margin:0;font-size:20px} .lock p{color:var(--mut);font-size:14px;margin:0 0 4px;max-width:300px}
+.lock input{background:var(--card);border:1px solid var(--line);color:var(--fg);
+ border-radius:12px;padding:14px 16px;font-size:17px;width:min(300px,86vw);text-align:center}
+.lock button{background:var(--acc);color:#04203f;border:0;border-radius:12px;
+ padding:13px 30px;font:700 16px inherit}
+.err{color:#ff8e8e;font-size:13px;min-height:18px}
+.foot{text-align:center;color:#5b6b86;font-size:11px;padding:18px 0 4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="lock" class="lock">
+    <h2>Lịch bay</h2>
+    <p>Nhập mật khẩu để mở lịch. Máy sẽ nhớ cho những lần sau.</p>
+    <input id="pw" type="password" inputmode="text" autocomplete="current-password" placeholder="Mật khẩu">
+    <button id="go">Mở</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div id="app" hidden>
+    <header><h1>Lịch bay</h1><span class="sub" id="stamp"></span></header>
+
+    <div class="pane on" id="p-next">
+      <div id="hero"></div>
+      <div id="upcoming"></div>
+    </div>
+
+    <div class="pane" id="p-cal">
+      <div id="calwrap"></div>
+      <div id="list"></div>
+    </div>
+
+    <div class="pane" id="p-hotel"><div id="hotels"></div></div>
+    <div class="pane" id="p-crew"><div id="crew"></div></div>
+
+    <div class="foot" id="foot"></div>
+  </div>
+</div>
+
+<nav class="tabs" id="tabs" hidden>
+  <button data-p="next" aria-selected="true"><span class="ic">✈️</span>Kế tiếp</button>
+  <button data-p="cal" aria-selected="false"><span class="ic">🗓</span>Cả tháng</button>
+  <button data-p="hotel" aria-selected="false"><span class="ic">🏨</span>Khách sạn</button>
+  <button data-p="crew" aria-selected="false"><span class="ic">👥</span>Tổ bay</button>
+</nav>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const LSK='ecrew_key_v1';
+let DATA=null;
+
+const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const b64e=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
+
+async function deriveKey(pw,salt,iter){
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:iter,hash:'SHA-256'},
+    base,{name:'AES-GCM',length:256},true,['decrypt']);
+}
+async function decrypt(enc,key){
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(enc.iv)},key,b64d(enc.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function fetchEnc(){
+  const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});
+  if(!r.ok) throw new Error('no data');
+  return r.json();
+}
+
+/* ---------- helpers ---------- */
+const DOW=['CN','T2','T3','T4','T5','T6','T7'];
+const pad=n=>String(n).padStart(2,'0');
+const D=s=>s?new Date(s.replace(' ','T')):null;
+const hm=s=>{const d=D(s);return d?pad(d.getHours())+':'+pad(d.getMinutes()):''};
+const dkey=s=>s?s.slice(0,10):'';
+const dlabel=s=>{const d=D(s);return DOW[d.getDay()]+', '+d.getDate()+'/'+(d.getMonth()+1)};
+const TYPE={Flight:'Bay',Hotel:'Khách sạn',Off:'Nghỉ',Standby:'Trực',Default:'Khác'};
+
+function countdown(to){
+  const ms=D(to)-new Date();
+  if(ms<0) return null;
+  const h=Math.floor(ms/3.6e6), m=Math.floor(ms%3.6e6/6e4);
+  if(h>=24){const d=Math.floor(h/24);return `còn ${d} ngày ${h%24} giờ`;}
+  return `còn ${h} giờ ${m} phút`;
+}
+
+function legsHTML(d){
+  if(!d.legs||!d.legs.length) return '';
+  return '<div class="legs">'+d.legs.map(l=>
+    `<div class="leg"><span class="n">${l.fl}</span><span class="p">${l.from}</span>
+     <span class="x">${l.dep}</span><span class="x">→</span><span class="p">${l.to}</span>
+     <span class="x">${l.arr}</span></div>`).join('')+'</div>';
+}
+function cardHTML(d){
+  const dh=d.dh?'<span class="badge">DHC</span>':'';
+  const name=d.type==='Hotel'&&d.hotel?d.hotel.name:(d.code||TYPE[d.type]||d.type);
+  const rt=d.type==='Hotel'?'':(d.route||'');
+  let extra='';
+  if(d.type==='Hotel'&&d.hotel){
+    const h=d.hotel;
+    extra=`<div class="meta">Nhận phòng ${h.in||'—'} · Trả phòng ${h.out||'—'}`+
+      (h.tel?`\n☎ ${h.tel}`:'')+(h.addr?`\n${h.addr}`:'')+'</div>';
+  }else if(d.report){
+    extra=`<div class="meta">Báo cáo ${d.report} · Kết thúc ${d.debrief||'—'}${d.loc?' · '+d.loc:''}</div>`;
+  }
+  return `<div class="card ${d.type}">
+    <div class="top"><span class="c">${name}</span><span class="r">${rt}</span> ${dh}
+    <span class="t">${hm(d.s)}–${hm(d.e)}</span></div>
+    ${legsHTML(d)}${extra}</div>`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const ds=DATA.duties||[];
+  $('#stamp').textContent='Cập nhật '+(DATA.gen?new Date(DATA.gen).toLocaleString('vi-VN',
+      {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—');
+
+  const now=new Date();
+  const next=ds.find(d=>D(d.e)>now&&d.type!=='Off')||null;
+  if(next){
+    const cd=countdown(next.s);
+    const nm=next.type==='Hotel'&&next.hotel?next.hotel.name:(next.code||TYPE[next.type]);
+    $('#hero').innerHTML=`<div class="hero">
+      <div class="lbl">${D(next.s)>now?'Chuyến kế tiếp':'Đang diễn ra'}</div>
+      <div class="code">${nm}</div>
+      <div class="route">${next.route||next.loc||''}</div>
+      <div class="when">${dlabel(next.s)} · ${hm(next.s)} – ${hm(next.e)}</div>
+      ${cd?`<div class="cd">${cd}</div>`:''}
+      ${next.report?`<div class="rep">Giờ báo cáo <b>${next.report}</b></div>`:''}
+      ${legsHTML(next)}</div>`;
+  }else{
+    $('#hero').innerHTML='<div class="empty-msg">Không còn chuyến nào sắp tới trong kỳ này.</div>';
+  }
+
+  const up=ds.filter(d=>D(d.e)>now).slice(0,12);
+  $('#upcoming').innerHTML=groupHTML(up);
+  $('#list').innerHTML=groupHTML(ds);
+  $('#calwrap').innerHTML=calHTML(ds);
+
+  const hs=ds.filter(d=>d.hotel);
+  $('#hotels').innerHTML=hs.length?hs.map(d=>{
+    const h=d.hotel;
+    return `<div class="day"><div class="dh"><b>${dlabel(d.s)}</b><span class="tag">${d.loc||''}</span></div>
+      <div class="card Hotel"><div class="top"><span class="c">${h.name||'—'}</span></div>
+      <div class="meta">Nhận ${h.in||'—'} ${h.inDate||''}\nTrả ${h.out||'—'} ${h.outDate||''}`+
+      (h.tel?`\n☎ ${h.tel}`:'')+(h.addr?`\n${h.addr}`:'')+
+      (h.toAirport?`\nXe ra sân bay: ${h.toAirport}`:'')+`</div></div></div>`;
+  }).join(''):'<div class="empty-msg">Kỳ này không có layover khách sạn.</div>';
+
+  $('#crew').innerHTML=DATA.crew&&DATA.crew.trim()
+    ? '<pre class="txt">'+esc(DATA.crew)+'</pre>'
+    : '<div class="empty-msg">Chưa có dữ liệu tổ bay.</div>';
+
+  $('#foot').textContent='Kỳ '+(DATA.period?.start||'')+' → '+(DATA.period?.end||'');
+}
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function groupHTML(list){
+  if(!list.length) return '<div class="empty-msg">Trống.</div>';
+  const by={};
+  list.forEach(d=>{(by[dkey(d.s)] ||= []).push(d)});
+  const today=new Date().toISOString().slice(0,10);
+  return Object.keys(by).sort().map(k=>{
+    const tag=k===today?'<span class="tag">Hôm nay</span>':'';
+    return `<div class="day"><div class="dh"><b>${dlabel(k+'T00:00:00')}</b>${tag}</div>
+      ${by[k].map(cardHTML).join('')}</div>`;
+  }).join('');
+}
+
+function calHTML(ds){
+  if(!ds.length) return '';
+  const first=D(ds[0].s), last=D(ds[ds.length-1].e);
+  const y=first.getFullYear(), m=first.getMonth();
+  const start=new Date(y,m,1), end=new Date(last.getFullYear(),last.getMonth()+1,0);
+  const by={};
+  ds.forEach(d=>{const k=dkey(d.s); if(!by[k]||rank(d)>rank(by[k])) by[k]=d});
+  let h='<div class="cal">'+DOW.map(d=>`<div class="hd">${d}</div>`).join('');
+  const cur=new Date(start); cur.setDate(1-start.getDay());
+  const today=new Date().toISOString().slice(0,10);
+  while(cur<=end||cur.getDay()!==0){
+    const k=cur.toISOString().slice(0,10);
+    const inRange=cur>=new Date(y,m,1)&&cur<=end;
+    const d=by[k];
+    if(!inRange){h+='<div class="c empty"></div>'}
+    else{
+      const lbl=d?(d.type==='Flight'?(d.code||'BAY'):d.type==='Hotel'?'KS':
+                   d.type==='Off'?'OFF':d.type==='Standby'?'SBY':'•'):'';
+      h+=`<div class="c ${k===today?'today':''}" ${d?`data-t="${d.type}"`:''}>
+          <span class="n">${cur.getDate()}</span><span class="b">${lbl}</span></div>`;
+    }
+    cur.setDate(cur.getDate()+1);
+    if(cur>end&&cur.getDay()===0) break;
+  }
+  return h+'</div>';
+}
+const rank=d=>({Flight:4,Standby:3,Hotel:2,Off:1}[d.type]||0);
+
+/* ---------- unlock ---------- */
+async function boot(){
+  const saved=localStorage.getItem(LSK);
+  if(!saved) return;
+  try{
+    const enc=await fetchEnc();
+    const key=await crypto.subtle.importKey('raw',b64d(saved),{name:'AES-GCM'},true,['decrypt']);
+    DATA=await decrypt(enc,key);
+    localStorage.setItem('ecrew_cache',JSON.stringify(DATA));
+    show();
+  }catch(e){
+    const c=localStorage.getItem('ecrew_cache');
+    if(c){DATA=JSON.parse(c);show();}
+  }
+}
+function show(){ $('#lock').hidden=true; $('#app').hidden=false; $('#tabs').hidden=false; render(); }
+
+$('#go').onclick=async()=>{
+  const pw=$('#pw').value; if(!pw) return;
+  $('#err').textContent='Đang mở…';
+  try{
+    const enc=await fetchEnc();
+    const key=await deriveKey(pw,b64d(enc.salt),enc.iter||210000);
+    DATA=await decrypt(enc,key);
+    const raw=await crypto.subtle.exportKey('raw',key);
+    localStorage.setItem(LSK,b64e(raw));
+    localStorage.setItem('ecrew_cache',JSON.stringify(DATA));
+    $('#err').textContent=''; show();
+  }catch(e){ $('#err').textContent='Mật khẩu không đúng hoặc chưa có dữ liệu.'; }
+};
+$('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('#go').click()});
+
+$('#tabs').onclick=e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  $$('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));
+  scrollTo(0,0);
+};
+
+setInterval(()=>{if(DATA)render()},60000);
+boot();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
