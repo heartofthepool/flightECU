@@ -385,7 +385,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261025-193224';
+const BUILD='20261025-193735';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -409,12 +409,50 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
   }catch(e){}
 })();
 const LSK='ecrew_key_v1', CACHE='ecrew_cache', NOTES='ecrew_notes';
-const readNotes=()=>{try{return JSON.parse(localStorage.getItem(NOTES)||'{}')}catch(e){return {}}};
-const noteOf=k=>(readNotes()[k]||'').trim();
+/* Ghi chu: {ngay:{t,ts,pending,sent}} - luu may + dong bo qua Mac mini */
+const readNotes=()=>{try{
+  const o=JSON.parse(localStorage.getItem(NOTES)||'{}');
+  for(const k in o) if(typeof o[k]==='string') o[k]={t:o[k],ts:1,pending:true};
+  return o;
+}catch(e){return {}}};
+const writeNotes=o=>{try{localStorage.setItem(NOTES,JSON.stringify(o))}catch(e){}};
+const noteOf=k=>{const n=readNotes()[k]; return n&&n.t?n.t.trim():''};
+const notePending=k=>{const n=readNotes()[k]; return !!(n&&n.pending)};
+
 function saveNote(k,v){
+  const n=readNotes(), ts=Date.now(), t=v.trim();
+  n[k]={t,ts,pending:true};
+  writeNotes(n);
+  pushNote(k,t,ts);
+}
+async function pushNote(k,t,ts){
+  if(!DATA||!DATA.ntfy) return false;
+  try{
+    const r=await fetch('https://ntfy.sh/'+encodeURIComponent(DATA.ntfy),{method:'POST',
+      body:JSON.stringify({cmd:'note',date:k,text:t,ts,req:String(ts)})});
+    if(!r.ok) return false;
+    const n=readNotes();
+    if(n[k]&&n[k].ts===ts){ n[k].sent=true; writeNotes(n); }
+    return true;
+  }catch(e){ return false; }
+}
+async function flushNotes(){
   const n=readNotes();
-  if(v.trim()) n[k]=v.trim(); else delete n[k];
-  try{localStorage.setItem(NOTES,JSON.stringify(n))}catch(e){}
+  for(const k in n){ if(n[k].pending&&!n[k].sent) await pushNote(k,n[k].t||'',n[k].ts); }
+}
+function mergeNotes(){
+  const srv=(DATA&&DATA.notes)||{}, loc=readNotes();
+  let ch=false;
+  for(const k in srv){
+    const a=srv[k], b=loc[k];
+    if(!b || (a.ts||0)>=(b.ts||0)){
+      if(!b || b.t!==a.t || b.pending){ loc[k]={t:a.t,ts:a.ts||0}; ch=true; }
+    }
+  }
+  for(const k in loc){
+    if(loc[k].pending && !loc[k].t && !srv[k]){ delete loc[k]; ch=true; }
+  }
+  if(ch) writeNotes(loc);
 }
 const memoOf=k=>((DATA&&DATA.memos)||[]).filter(m=>m.d===k).map(m=>m.t).join('\n');
 let DATA=null, CUR=null;
@@ -747,7 +785,7 @@ function dutyHTML(d,i){
   h+='</div>';
   const k=dkey(d.s), mm=memoOf(k), nn=noteOf(k);
   if(mm) h+=`<div class="memo"><b>Ghi chú từ eCrew</b>${esc(mm)}</div>`;
-  if(nn) h+=`<div class="mynote"><b>Ghi chú của em</b>${esc(nn)}</div>`;
+  if(nn) h+=`<div class="mynote"><b>Ghi chú của em${notePending(k)?' · đang gửi':''}</b>${esc(nn)}</div>`;
   return h;
 }
 
@@ -954,6 +992,7 @@ async function loadNextMonth(){
 }
 
 function render(){
+  mergeNotes();
   const ds=DATA.duties||[];
   setStamp();
 
@@ -983,7 +1022,7 @@ function render(){
              <span class="dd">${fullDate(k)}</span>
              <span class="nolbl">${mm||nn?'Có ghi chú ›':'Không có lịch ›'}</span></div>
            ${mm?`<div class="memo"><b>Ghi chú từ eCrew</b>${esc(mm)}</div>`:''}
-           ${nn?`<div class="mynote"><b>Ghi chú của em</b>${esc(nn)}</div>`:''}</div>`});
+           ${nn?`<div class="mynote"><b>Ghi chú của em${notePending(k)?' · đang gửi':''}</b>${esc(nn)}</div>`:''}</div>`});
       }
       k=addDay(k,1);
     }
@@ -1038,6 +1077,7 @@ $('#nsave').onclick=()=>{
   if(noteKey){ saveNote(noteKey,$('#ntext').value); render(); }
   $('#note').hidden=true;
 };
+window.addEventListener('online',()=>flushNotes());
 
 function showModal(html){ $('#mtx').innerHTML=html; $('#modal').hidden=false; }
 $('#mok').onclick=()=>{$('#modal').hidden=true};
@@ -1201,7 +1241,7 @@ async function boot(){
       let d=null;
       try{ d=await decrypt(await fetchEnc(),key); localStorage.setItem(CACHE,JSON.stringify(d)); }
       catch(e){ const c=localStorage.getItem(CACHE); if(c) d=JSON.parse(c); }
-      if(d){ DATA=d; show(); return; }
+      if(d){ DATA=d; show(); flushNotes(); return; }
     }catch(e){}
   }
   $('#lock').hidden=false;
