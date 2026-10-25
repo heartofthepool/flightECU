@@ -21,7 +21,7 @@
   --st:env(safe-area-inset-top);--sb2:env(safe-area-inset-bottom);
 }
 html{height:100%}
-html,body{margin:0;background:var(--bg);color:var(--fg);
+html,body{margin:0;background:#0f1a2e;color:var(--fg);
  font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
 body{-webkit-font-smoothing:antialiased;overflow:hidden}
 #shell{position:fixed;top:0;left:0;right:0;
@@ -33,7 +33,8 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .brand{display:flex;flex-direction:column;align-items:stretch;min-width:0}
 .sig{margin-top:1px;font-size:11.5px;font-weight:700;color:#8ea4c4}
 .sig .hr{color:#fff}
-#scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+ background:var(--bg)}
 .wrap{max-width:760px;margin:0 auto;padding:0 14px 20px}
 #hdr h1{font-size:36px;margin:0;font-weight:800;letter-spacing:-.3px;line-height:1}
 #hdr h1 span{color:var(--acc)}
@@ -53,7 +54,8 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 #stamp .trk{fill:none;stroke:#3b4d72;stroke-width:2.5}
 #stamp .arc{fill:none;stroke:var(--acc);stroke-width:2.5;stroke-linecap:round;
  transform:rotate(-90deg);transform-origin:11px 11px;transition:stroke-dashoffset .6s ease}
-#stamp .ic.ok{animation:pop .35s ease}
+#stamp .ic.ok{animation:pop .45s cubic-bezier(.2,.9,.3,1.4)}
+#stamp.done{border-color:#2f6b43;background:#15301f}
 #stamp .ic.ok circle{fill:#22c55e;stroke:none}
 #stamp .ic.ok path{fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;
  stroke-dasharray:16;stroke-dashoffset:16;animation:drw .45s .05s ease forwards}
@@ -667,12 +669,14 @@ function setStamp(state,sub){
   const t=DATA&&DATA.gen?new Date(DATA.gen).toLocaleString('vi-VN',
       {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
   el.classList.toggle('busy',state==='busy');
+  if(state!=='ok') el.classList.remove('done');
   if(state==='busy'){
     el.innerHTML='<svg class="ic" viewBox="0 0 22 22"><circle class="trk" cx="11" cy="11" r="'+RING_R+'"/>'
       +'<circle class="arc" cx="11" cy="11" r="'+RING_R+'" stroke-dasharray="'+RING_C+'" style="stroke-dashoffset:'+RING_C+'"/>'
       +'<text class="pct" x="11" y="11">0</text></svg>'
       +'<span class="tx"><b>Vợ iu đợi xíu nha</b><small>'+esc(sub||'')+'</small></span>';
   }else if(state==='ok'){
+    el.classList.add('done');
     el.innerHTML=ICON_OK+'<span class="tx"><b>Đã cập nhật</b><small>'+esc(sub||'dữ liệu mới nhất')+'</small></span>';
   }else{
     el.innerHTML='<span class="tx"><b>Cập nhật</b><small>'+t+'</small></span>';
@@ -695,7 +699,8 @@ async function forceRefresh(){
   const oldGen=DATA.gen, req=String(Date.now()), t0=Date.now();
   const base='https://ntfy.sh/'+encodeURIComponent(DATA.ntfy), stBase=base+'-st';
   let since=Math.floor(t0/1000)-1, real=0, shown=0, gotRun=false, phase='wait';
-  const finish=(note)=>{busyNow=false; setStamp('ok',note); setTimeout(()=>{ if(!busyNow) setStamp(); },2600);};
+  const finish=(note)=>{busyNow=false; setStamp('ok',note);
+    setTimeout(()=>{ if(!busyNow) setStamp(); },9000);};
   setStamp('busy','Đang kết nối Mac mini');
   try{
     const sent=await fetch(base,{method:'POST',body:JSON.stringify({cmd:'refresh',req})});
