@@ -164,6 +164,11 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .morebtn{width:100%;background:var(--card);border:1px dashed var(--line);color:var(--mut);
  border-radius:12px;padding:12px;font:700 13px inherit;margin:8px 0}
 .morebtn:active{background:var(--card2)}
+.morebtn{position:relative;overflow:hidden}
+.morebtn.loading{border-style:solid;border-color:#2b5582;color:var(--fg)}
+.morebtn .fill{position:absolute;left:0;top:0;bottom:0;background:#1d3a5f;
+ transition:width .35s ease;z-index:0}
+.morebtn .lbl{position:relative;z-index:1}
 #modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
  background:rgba(4,8,16,.72);padding:28px}
 #modal[hidden]{display:none!important}
@@ -707,29 +712,72 @@ const ntfyPoll=async url=>{
   return (await r.text()).split('\n').filter(Boolean)
     .map(l=>{try{return JSON.parse(l)}catch(e){return null}}).filter(Boolean);
 };
-async function forceRefresh(){
-  if(busyNow) return;
-  const saved=localStorage.getItem(LSK); if(!saved) return;
-  const fail=msg=>{busyNow=false; setStamp(); showModal(msg);};
-  if(!DATA||!DATA.ntfy) return fail('Chưa có cấu hình cập nhật.<br>Nhờ người dùng chạy setup_listener.sh trên Mac mini.');
-  busyNow=true;
+const CUTE=[
+ "Chình iu đợi chút ạ, bọn này lề mề lắm",
+ "Gọi mãi chả thấy nghe máy, pực mìn...",
+ "Chình iu đợi tí Ecrew đang tìm sổ sách. haizzz",
+ "Vợ iu đợi chút bên Ecrew mới ngủ dậy còn đang lag",
+ "Đợi xíu xiu nào. Đợi chờ nà hạnh phúc ạ",
+ "Ôi đứng đợi ecrew lâu mỏi chân quá",
+ "Trước khi choa xem lịch choa tớ hun miếng"
+];
+const pickCute=()=>CUTE[Math.floor(Math.random()*CUTE.length)];
+const NO_NEW='Chồng vừa đi hỏi Ecrew thì nó bảo<br>chưa có lịch mới đâu yên châm 💛';
+
+/* giao dien chay tren nut "Cap nhat" */
+const stampUI={
+  start:()=>setStamp('busy','Đang kết nối Mac mini'),
+  prog:(p,msg)=>{ setRing(p); if(msg) setSub(msg); },
+  reset:()=>setStamp()
+};
+/* giao dien chay tren mot nut bat ky, dung chinh nut do lam thanh tien do */
+function btnUI(sel,label,rotateMs){
+  let phrase=pickCute(), last=Date.now();
+  const nextPhrase=()=>{
+    if(CUTE.length<2) return;
+    let c; do{ c=pickCute(); }while(c===phrase);
+    phrase=c;
+  };
+  const paint=p=>{
+    const b=document.querySelector(sel); if(!b) return;
+    b.classList.add('loading');
+    b.innerHTML='<span class="fill" style="width:'+p.toFixed(0)+'%"></span>'
+      +'<span class="lbl">'+esc(phrase)+' · '+Math.round(p)+'%</span>';
+  };
+  return {
+    start:()=>{ last=Date.now(); paint(0); },
+    prog:p=>{
+      if(rotateMs && Date.now()-last>=rotateMs){ nextPhrase(); last=Date.now(); }
+      paint(p);
+    },
+    reset:()=>{ const b=document.querySelector(sel); if(!b) return;
+      b.classList.remove('loading'); b.textContent=label; }
+  };
+}
+
+/* Chay mot lan cap nhat that. Tra ve {ok, changed} hoac {ok:false, msg} */
+async function runRefresh(ui){
+  const saved=localStorage.getItem(LSK);
+  if(!saved) return {ok:false,msg:'Chưa mở khóa dữ liệu.'};
+  if(!DATA||!DATA.ntfy) return {ok:false,
+    msg:'Chưa có cấu hình cập nhật.<br>Nhờ chồng chạy setup_listener.sh trên Mac mini.'};
   let key;
   try{ key=await crypto.subtle.importKey('raw',b64d(saved),{name:'AES-GCM'},true,['decrypt']); }
-  catch(e){ return fail('Không mở được khóa đã lưu.<br>Hãy nhập lại mật khẩu.'); }
+  catch(e){ return {ok:false,msg:'Không mở được khóa đã lưu.<br>Hãy nhập lại mật khẩu.'}; }
+
   const oldGen=DATA.gen, req=String(Date.now()), t0=Date.now();
   const base='https://ntfy.sh/'+encodeURIComponent(DATA.ntfy), stBase=base+'-st';
   let since=Math.floor(t0/1000)-1, real=0, shown=0, gotRun=false, phase='wait';
-  const finish=(note)=>{busyNow=false; setStamp('ok',note);
-    setTimeout(()=>{ if(!busyNow) setStamp(); },300000);};
-  setStamp('busy','Đang kết nối Mac mini');
+  ui.start();
   try{
     const sent=await fetch(base,{method:'POST',body:JSON.stringify({cmd:'refresh',req})});
     if(!sent.ok) throw new Error('send');
-  }catch(e){ return fail('Không gửi được lệnh tới Mac mini.<br>Kiểm tra mạng rồi thử lại.'); }
+  }catch(e){ return {ok:false,msg:'Không gửi được lệnh tới Mac mini.<br>Kiểm tra mạng rồi thử lại.'}; }
+
   for(;;){
     const el=Date.now()-t0;
-    if(!gotRun && el>90000) return fail('Mac mini chưa phản hồi.<br>Kiểm tra máy có bật và đang kết nối mạng.');
-    if(el>300000) return fail('Mac mini đang bận quá lâu.<br>Thử lại sau ít phút.');
+    if(!gotRun && el>90000) return {ok:false,msg:'Mac mini chưa phản hồi.<br>Kiểm tra máy có bật và nối mạng.'};
+    if(el>300000) return {ok:false,msg:'Mac mini bận quá lâu.<br>Thử lại sau ít phút.'};
     await sleep(1500);
     try{
       if(phase!=='pages'){
@@ -737,23 +785,20 @@ async function forceRefresh(){
         for(const m of msgs){
           if(m.event!=='message') continue;
           if(m.time>since) since=m.time;
-          let p; try{p=JSON.parse(m.message)}catch(e){continue}
-          if(!p||p.req!==req) continue;
-          if(p.st==='login') return fail('Cần đăng nhập lại eCrew trên Mac mini.');
-          if(p.st==='busy') return fail('Mac mini đang đồng bộ, thử lại sau ít phút.');
-          if(p.st==='err') return fail('Mac mini gặp lỗi khi cập nhật.<br>Xem nhật ký trên máy.');
-          if(p.st==='run'){ gotRun=true; real=Math.max(real,p.p); if(p.msg) setSub(p.msg); }
-          if(p.st==='same'){
-            gotRun=true;
-            setSub('Lịch không có gì thay đổi');
-            if(p.gen){
-              DATA.gen=p.gen;
-              try{localStorage.setItem(CACHE,JSON.stringify(DATA))}catch(e){}
-            }
-            setRing(100); render();
-            return finish('lịch không đổi');
+          let q; try{q=JSON.parse(m.message)}catch(e){continue}
+          if(!q||q.req!==req) continue;
+          if(q.st==='login') return {ok:false,msg:'Cần đăng nhập lại eCrew trên Mac mini.'};
+          if(q.st==='busy')  return {ok:false,msg:'Mac mini đang đồng bộ,<br>thử lại sau ít phút.'};
+          if(q.st==='err')   return {ok:false,msg:'Mac mini gặp lỗi khi cập nhật.'};
+          if(q.st==='run'){ gotRun=true; real=Math.max(real,q.p); ui.prog(Math.max(real,shown),q.msg); }
+          if(q.st==='same'){
+            if(q.gen){ DATA.gen=q.gen;
+              try{localStorage.setItem(CACHE,JSON.stringify(DATA))}catch(e){} }
+            ui.prog(100,'Lịch không có gì thay đổi');
+            render();
+            return {ok:true,changed:false};
           }
-          if(p.st==='ok'){ gotRun=true; phase='pages'; setSub('Đang chờ GitHub cập nhật'); }
+          if(q.st==='ok'){ gotRun=true; phase='pages'; ui.prog(96,'Đang tải lịch mới về'); }
         }
       }else{
         const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});
@@ -761,13 +806,60 @@ async function forceRefresh(){
         if(j.gen&&j.gen!==oldGen){
           DATA=await decrypt(j,key);
           try{localStorage.setItem(CACHE,JSON.stringify(DATA))}catch(e){}
-          render(); setRing(100); finish();
-          return;
+          ui.prog(100); render();
+          return {ok:true,changed:true};
         }
       }
     }catch(e){}
-    if(phase==='pages') setRing(100);
-    else { shown=Math.min(95,Math.max(real,shown+0.4)); setRing(shown); }
+    if(phase==='pages') ui.prog(98);
+    else { shown=Math.min(95,Math.max(real,shown+0.4)); ui.prog(shown); }
+  }
+}
+
+async function forceRefresh(){
+  if(busyNow) return;
+  busyNow=true;
+  const r=await runRefresh(stampUI);
+  busyNow=false;
+  if(!r.ok){ stampUI.reset(); showModal(r.msg); return; }
+  setStamp('ok', r.changed?'đã có lịch mới':'lịch không đổi');
+  setTimeout(()=>{ if(!busyNow) setStamp(); },300000);
+}
+
+/* Nut "Tai cac chuyen bay sap toi" */
+async function loadNextMonth(){
+  if(busyNow) return;
+  const LBL='Tải các chuyến bay sắp tới';
+  busyNow=true;
+  const today=new Date().getDate();
+  if(today<26){
+    /* Truoc ngay 26 hang thang chua the co lich moi: giu nguyen mot cau */
+    const ui=btnUI('#nextbtn',LBL,0);
+    const dur=3000+Math.random()*2000;
+    ui.start();
+    const t0=Date.now();
+    for(;;){
+      const e=Date.now()-t0;
+      if(e>=dur) break;
+      await sleep(100);
+      ui.prog(Math.min(99,e/dur*100));
+    }
+    ui.prog(100); await sleep(280);
+    ui.reset(); busyNow=false; showModal(NO_NEW);
+    return;
+  }
+  /* Tu ngay 26: cap nhat that, doi cau moi 5 giay */
+  const ui=btnUI('#nextbtn',LBL,5000);
+  const before=(DATA.duties||[]).length;
+  const r=await runRefresh(ui);
+  busyNow=false;
+  ui.reset();
+  if(!r.ok){ showModal(r.msg); return; }
+  const after=(DATA.duties||[]).length;
+  if(r.changed && after>before){
+    $('#scroll').scrollTop=$('#scroll').scrollHeight;
+  }else{
+    showModal(NO_NEW);
   }
 }
 
@@ -798,12 +890,7 @@ function render(){
     const w=$('#pastwrap'); w.hidden=!w.hidden;
     pb.textContent=(w.hidden?'▾':'▴')+` Các chuyến bay trước (${past.length})`;
   };
-  $('#nextbtn').onclick=()=>{
-    const end=(DATA.period&&DATA.period.end)||'';
-    const later=ds.some(d=>dkey(d.s)>end);
-    if(later){ $('#scroll').scrollTop=$('#scroll').scrollHeight; }
-    else showModal('Chưa có lịch tháng tới đâu em yêu.<br>Anh yêu em 💛');
-  };
+  $('#nextbtn').onclick=loadNextMonth;
 
   renderMonth(ds);
 
