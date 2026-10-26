@@ -386,7 +386,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261026-140941';
+const BUILD='20261026-152704';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -1141,11 +1141,12 @@ function monthRange(){
           to:ymd(new Date(n.getFullYear(),n.getMonth()+1,0))};
 }
 /* Bang "Gio & luong": ky luong bat dau ngay 25 hang thang */
+/* Ky luong thang N = 26 thang truoc -> 25 thang N */
 function payRange(off){
   const n=new Date();
   const m=new Date(n.getFullYear(),n.getMonth()+(off||0),1);
-  const s=new Date(m.getFullYear(),m.getMonth()-1,25);
-  const e=new Date(m.getFullYear(),m.getMonth(),24);
+  const s=new Date(m.getFullYear(),m.getMonth()-1,26);
+  const e=new Date(m.getFullYear(),m.getMonth(),25);
   return {from:ymd(s),to:ymd(e),month:m.getMonth()+1,year:m.getFullYear()};
 }
 const inRange=(d,r)=>{const k=dkey(d.s); return k>=r.from&&k<=r.to;};
@@ -1257,8 +1258,8 @@ function renderPay(all){
     `<button class="morebtn" id="payprev">▴ Tháng trước</button>`+
     payBox(all,payOff)+
     `<button class="morebtn" id="paynext">▾ Tháng sau</button>
-     <div class="mnote">Kỳ lương của một tháng tính từ <b>ngày 25 tháng trước</b>
-       đến <b>ngày 24 tháng đó</b>.<br>
+     <div class="mnote">Kỳ lương của một tháng tính từ <b>ngày 26 tháng trước</b>
+       đến <b>ngày 25 tháng đó</b>.<br>
        Ước tính <b>trước thuế</b> theo đơn giá bậc CM4 phiếu lương 9/2026.
        Chưa gồm layover, phụ cấp vị trí, truy lĩnh.
        Chưa trừ BHXH, công đoàn, thuế TNCN.</div>`;
