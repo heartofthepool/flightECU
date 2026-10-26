@@ -237,7 +237,12 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .leg .n{color:var(--acc);font-weight:800;min-width:48px}
 .leg .p{font-weight:800}.leg .x{color:var(--mut);font-size:13px}
 .leg .ap{font-size:11.5px;color:var(--mut);padding-left:56px;margin-top:1px}
-.leg .ap.tail{color:#7fc0ff;font-weight:700;letter-spacing:.02em}
+.leg .ap.tail{font-weight:700;letter-spacing:.02em}
+.leg .ap.tail a{color:#7fc0ff;text-decoration:none}
+.lg a.tailmini{text-decoration:none}
+.dtitle a.reglink{color:inherit;text-decoration:none;display:block}
+.dtitle .fr{display:block;font-size:12px;font-weight:700;color:#7fc0ff;
+ letter-spacing:0;margin-top:2px}
 .lg .tailmini{margin-left:auto;font-size:11px;font-weight:700;color:#7fc0ff;
  font-variant-numeric:normal}
 .lg .dh{margin-left:6px}
@@ -390,7 +395,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261027-001342';
+const BUILD='20261027-001612';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -488,6 +493,8 @@ const AP={
  BOM:{n:'Chhatrapati Shivaji',c:'Mumbai',tz:5.5}, SYD:{n:'Kingsford Smith',c:'Sydney',tz:11},
  MEL:{n:'Tullamarine',c:'Melbourne',tz:11}
 };
+const fr24=r=>'https://www.flightradar24.com/data/aircraft/'+
+  String(r||'').toLowerCase().replace(/\s+/g,'');
 const apN=c=>AP[c]?AP[c].n:c, apC=c=>AP[c]?AP[c].c:c, apTZ=c=>AP[c]?AP[c].tz:BASE_TZ;
 const apFull=c=>AP[c]?AP[c].n+' · '+AP[c].c:c;
 const PAY={base:7000000,makeup:300000,phone:300000,stationery:300000,uniform:410000,
@@ -619,7 +626,10 @@ function openDetail(d){
   const sub=d.reg
     ? `${esc(nm)}${d.route?' · '+esc(d.route):''}${d.regs?' · '+d.regs.length+' tàu':''}`
     : esc(d.route||apFull(d.loc)||'');
-  let h=`<div class="dtitle">${esc(title)}</div>
+  let h=`<div class="dtitle">${d.reg
+      ? `<a class="reglink" href="${fr24(d.reg)}" target="_blank" rel="noopener">${esc(title)}
+          <span class="fr">Theo dõi trên FlightRadar24 ›</span></a>`
+      : esc(title)}</div>
     <div class="dsub">${sub}</div>
     <div class="ddate">${DOW[D(d.s).getDay()]}, ${D(d.s).toLocaleDateString('vi-VN')}
       · ${hm(d.s)} – ${hm(d.e)}${d.dh?' · <span class="badge">DHC</span>':''}</div>`;
@@ -646,7 +656,7 @@ function openDetail(d){
           <span class="p">${l.to}</span><span class="x">${l.arr}${dmark(l.ad)}</span>
           <span class="x">· ${hhmm(legMin(l))}</span>${df?`<span class="x">· lệch ${df>0?'+':''}${df}h</span>`:''}</div>
           <div class="ap">${apFull(l.from)} → ${apFull(l.to)}</div>
-          ${l.reg?`<div class="ap tail">✈ ${esc(l.reg)}${l.ac?' · '+esc(l.ac):''}</div>`:''}</div>`;
+          ${l.reg?`<div class="ap tail"><a href="${fr24(l.reg)}" target="_blank" rel="noopener">✈ ${esc(l.reg)}${l.ac?' · '+esc(l.ac):''} ›</a></div>`:''}</div>`;
       }).join('')+`</div></div>`;
   }
 
@@ -784,7 +794,7 @@ function dutyHTML(d,i){
     h+='<div class="lgs">'+d.legs.map(l=>`<div class="lg">
       <span class="fn">${l.fl}</span><span class="tm">${l.dep}</span>
       <span class="ar">${l.from} ${l.to}</span><span class="tm">${l.arr}${dmark(l.ad)}</span>
-      ${l.reg?`<span class="tailmini">${esc(l.reg)}</span>`:''}
+      ${l.reg?`<a class="tailmini" href="${fr24(l.reg)}" target="_blank" rel="noopener">${esc(l.reg)} ›</a>`:''}
       ${d.dh?'<span class="dh">DHC</span>':''}</div>`).join('')+'</div>';
   }else{
     const nm=d.code||TYPE[d.type]||d.type;
@@ -1135,6 +1145,7 @@ $('#stamp').onclick=forceRefresh;
 $('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').hidden=true};
 
 $('#list').onclick=e=>{
+  if(e.target.closest('a')) return;      /* de link FlightRadar24 chay */
   const n=e.target.closest('[data-note]');
   if(n){ openNote(n.dataset.note); return; }
   const b=e.target.closest('.duty'); if(!b||b.dataset.i===undefined) return;
