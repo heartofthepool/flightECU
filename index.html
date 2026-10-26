@@ -237,6 +237,10 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .leg .n{color:var(--acc);font-weight:800;min-width:48px}
 .leg .p{font-weight:800}.leg .x{color:var(--mut);font-size:13px}
 .leg .ap{font-size:11.5px;color:var(--mut);padding-left:56px;margin-top:1px}
+.leg .ap.tail{color:#7fc0ff;font-weight:700;letter-spacing:.02em}
+.lg .tailmini{margin-left:auto;font-size:11px;font-weight:700;color:#7fc0ff;
+ font-variant-numeric:normal}
+.lg .dh{margin-left:6px}
 .crewrow{display:flex;gap:8px;font-size:13px;padding:4px 0;align-items:baseline}
 .crewrow .ps{min-width:32px;font-weight:800;color:var(--acc);font-size:11px}
 .crewrow .nm{flex:1}.crewrow .cid{color:var(--mut);font-size:11px;font-variant-numeric:tabular-nums}
@@ -386,7 +390,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261026-152704';
+const BUILD='20261027-001342';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -611,8 +615,12 @@ function openDetail(d){
   const nm=d.type==='Hotel'&&d.hotel?d.hotel.name:(d.code||TYPE[d.type]||d.type);
   $('#dttl').textContent=new Date(d.s).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'});
   const to=takeoff(d);
-  let h=`<div class="dtitle">${esc(nm)}</div>
-    <div class="dsub">${esc(d.route||apFull(d.loc)||'')}</div>
+  const title=d.reg?d.reg:nm;
+  const sub=d.reg
+    ? `${esc(nm)}${d.route?' · '+esc(d.route):''}${d.regs?' · '+d.regs.length+' tàu':''}`
+    : esc(d.route||apFull(d.loc)||'');
+  let h=`<div class="dtitle">${esc(title)}</div>
+    <div class="dsub">${sub}</div>
     <div class="ddate">${DOW[D(d.s).getDay()]}, ${D(d.s).toLocaleDateString('vi-VN')}
       · ${hm(d.s)} – ${hm(d.e)}${d.dh?' · <span class="badge">DHC</span>':''}</div>`;
 
@@ -637,7 +645,8 @@ function openDetail(d){
           <span class="p">${l.from}</span><span class="x">${l.dep}${dmark(l.dd)}</span><span class="x">→</span>
           <span class="p">${l.to}</span><span class="x">${l.arr}${dmark(l.ad)}</span>
           <span class="x">· ${hhmm(legMin(l))}</span>${df?`<span class="x">· lệch ${df>0?'+':''}${df}h</span>`:''}</div>
-          <div class="ap">${apFull(l.from)} → ${apFull(l.to)}</div></div>`;
+          <div class="ap">${apFull(l.from)} → ${apFull(l.to)}</div>
+          ${l.reg?`<div class="ap tail">✈ ${esc(l.reg)}${l.ac?' · '+esc(l.ac):''}</div>`:''}</div>`;
       }).join('')+`</div></div>`;
   }
 
@@ -775,6 +784,7 @@ function dutyHTML(d,i){
     h+='<div class="lgs">'+d.legs.map(l=>`<div class="lg">
       <span class="fn">${l.fl}</span><span class="tm">${l.dep}</span>
       <span class="ar">${l.from} ${l.to}</span><span class="tm">${l.arr}${dmark(l.ad)}</span>
+      ${l.reg?`<span class="tailmini">${esc(l.reg)}</span>`:''}
       ${d.dh?'<span class="dh">DHC</span>':''}</div>`).join('')+'</div>';
   }else{
     const nm=d.code||TYPE[d.type]||d.type;
