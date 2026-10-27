@@ -395,7 +395,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261027-001612';
+const BUILD='20261027-125320';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -521,6 +521,9 @@ const DOW=['CN','T2','T3','T4','T5','T6','T7'];
 const DOWF=['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];
 const fullDate=k=>{const d=D(k+'T00:00:00');
   return DOWF[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();};
+/* Ngay hom nay theo gio may, KHONG phai gio UTC */
+const todayKey=()=>{const d=new Date();
+  return [d.getFullYear(),pad(d.getMonth()+1),pad(d.getDate())].join('-');};
 const addDay=(k,n)=>{const d=D(k+'T00:00:00');d.setDate(d.getDate()+n);
   return [d.getFullYear(),pad(d.getMonth()+1),pad(d.getDate())].join('-');};
 const pad=n=>String(n).padStart(2,'0');
@@ -778,7 +781,7 @@ function buildGroups(ds){
 
 function dutyHTML(d,i){
   const to=takeoff(d);
-  const dt=D(d.s), today=new Date().toISOString().slice(0,10)===dkey(d.s);
+  const dt=D(d.s), today=todayKey()===dkey(d.s);
   let h=`<div class="dayhd"><span class="dd">${fullDate(dkey(d.s))}</span>
     ${today?'<span class="tg">HÔM NAY</span>':''}</div>`;
   if(to){
@@ -1056,7 +1059,7 @@ function render(){
   const ds=DATA.duties||[];
   setStamp();
 
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayKey();
   const groups=buildGroups(ds);
 
   const used=new Set();
@@ -1095,7 +1098,7 @@ function render(){
   let h='';
   if(past.length){
     h+=`<button class="morebtn" id="pastbtn">▾ Các chuyến bay trước (${past.length})</button>
-        <div id="pastwrap" hidden>${past.map(x=>x.html).join('')}</div>`;
+        <div id="pastwrap" hidden>${past.slice().reverse().map(x=>x.html).join('')}</div>`;
   }
   h+=future.length?future.map(x=>x.html).join('')
      :'<div class="empty-msg">Không còn chuyến nào sắp tới trong kỳ này.</div>';
