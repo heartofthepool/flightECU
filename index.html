@@ -102,35 +102,19 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .badge.cap{background:#1d3326;color:#7bd68e;border-color:#2f5c3d}
 
 
-/* ====== MAN HINH MO DAU ====== */
-#splash{position:fixed;inset:0;z-index:100;background:var(--bg);
- display:flex;align-items:center;justify-content:center;overflow:hidden}
-#splash[hidden]{display:none!important}
-#splash.out{animation:spfade .55s ease forwards}
-@keyframes spfade{to{opacity:0;visibility:hidden}}
-.sttl{font-size:clamp(34px,11vw,72px);font-weight:800;letter-spacing:-1.5px;
- z-index:2;animation:sttlIn .55s cubic-bezier(.2,.9,.3,1.2) both}
-.sttl span{color:var(--acc)}
-.sttl.go{animation:sttlOut .5s ease forwards}
-@keyframes sttlIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
-@keyframes sttlOut{to{opacity:0;transform:scale(1.5) translateY(-12px)}}
-.pl{position:absolute;bottom:-22vh;line-height:0;color:#8ec8ff;
- opacity:0;will-change:transform,opacity;
- filter:drop-shadow(0 0 16px rgba(90,170,255,.5))}
-.pl svg{display:block;width:1em;height:1em;fill:currentColor}
-@keyframes fly{
-  0%{opacity:0;transform:translateY(0) scale(.6)}
-  10%{opacity:1}
-  85%{opacity:1}
-  100%{opacity:0;transform:translateY(-150vh) scale(1.9)}
-}
-.pl.big{color:#cfe6ff;filter:drop-shadow(0 0 46px rgba(120,190,255,.6))}
-@keyframes flybig{
-  0%{opacity:0;transform:translateY(0) scale(.5)}
-  25%{opacity:1}
-  70%{opacity:1}
-  100%{opacity:0;transform:translateY(-165vh) scale(4.2)}
-}
+/* ====== THANH CAP NHAT KHI MO APP ====== */
+#ldbar{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);z-index:100;
+ height:3px;pointer-events:none}
+#ldbar[hidden]{display:none!important}
+#ldbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4da3ff,#9fd0ff);
+ box-shadow:0 0 8px rgba(77,163,255,.7);transition:width .95s cubic-bezier(.2,.8,.3,1)}
+#ldbar.run i{width:88%}
+#ldbar.done i{width:100%;transition:width .2s ease}
+#ldbar span{position:absolute;top:6px;left:50%;transform:translateX(-50%);
+ font-size:11px;font-weight:700;color:#cfe0f7;background:rgba(19,29,49,.92);
+ border:1px solid var(--line);padding:2px 10px;border-radius:20px;white-space:nowrap}
+#ldbar.done{opacity:0;transition:opacity .35s ease .2s}
+
 
 /* ====== THE DUTY KIEU ECREW ====== */
 .grp{background:var(--card);border:1px solid var(--line);border-left-width:4px;
@@ -246,6 +230,17 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .lg .tailmini{margin-left:auto;font-size:11px;font-weight:700;color:#7fc0ff;
  font-variant-numeric:normal}
 .lg .dh{margin-left:6px}
+.lg .ar{white-space:nowrap}
+.lg .lx{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;
+ line-height:1.15;flex:none;align-self:center}
+.lg .lx .tailmini{margin-left:0}
+.px{font-size:10.5px;opacity:.9;font-weight:700;color:#cfe0f7;font-variant-numeric:tabular-nums;white-space:nowrap}
+.px b{color:var(--br);font-weight:800;margin-right:1px}
+@media (max-width:389px){
+  .lg{font-size:13px;gap:5px}.lg .fn{min-width:34px}.lg .tm{min-width:36px}
+  .lg .tailmini{font-size:10px}.px{font-size:9.5px}
+}
+.leg .ap.pxd{color:#cfe0f7}.leg .ap.pxd b{color:var(--br)}
 .crewrow{display:flex;gap:8px;font-size:13px;padding:4px 0;align-items:baseline}
 .crewrow .ps{min-width:32px;font-weight:800;color:var(--acc);font-size:11px}
 .crewrow .nm{flex:1}.crewrow .cid{color:var(--mut);font-size:11px;font-variant-numeric:tabular-nums}
@@ -336,7 +331,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </head>
 <body>
 
-<div id="splash"><div class="sttl" id="sttl">Ecrew<span>Ultra</span></div></div>
+<div id="ldbar" hidden><i></i><span>Đang cập nhật…</span></div>
 
 <div id="shell">
 <header id="hdr" hidden><div class="in">
@@ -349,7 +344,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 
 <main id="scroll">
 <div class="wrap">
-  <div id="lock" class="lock">
+  <div id="lock" class="lock" hidden>
     <h2>Ecrew<span>Ultra</span></h2>
     <p>Nhập mật khẩu để mở lịch. Chỉ hỏi một lần, lần sau vào thẳng.</p>
     <input id="pw" type="password" autocomplete="current-password" placeholder="Mật khẩu">
@@ -395,7 +390,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261111-220654';
+const BUILD='20261111-224642';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -534,6 +529,7 @@ const dkey=s=>s?s.slice(0,10):'';
 const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const TYPE={Flight:'Bay',Hotel:'Khách sạn',Off:'Ngày nghỉ',Standby:'Trực',
   Training:'Huấn luyện',Default:'Khác'};
+const paxS=p=>p?`<span class="px"><b>C</b>${p.c||0} <b>Y</b>${p.y||0}</span>`:'';
 const fmt=t=>pad(t.getHours())+':'+pad(t.getMinutes());
 const sameDay=(a,b)=>a.toDateString()===b.toDateString();
 function takeoff(d){
@@ -659,7 +655,8 @@ function openDetail(d){
           <span class="p">${l.to}</span><span class="x">${l.arr}${dmark(l.ad)}</span>
           <span class="x">· ${hhmm(legMin(l))}</span>${df?`<span class="x">· lệch ${df>0?'+':''}${df}h</span>`:''}</div>
           <div class="ap">${apFull(l.from)} → ${apFull(l.to)}</div>
-          ${l.reg?`<div class="ap tail"><a href="${fr24(l.reg)}" target="_blank" rel="noopener">✈ ${esc(l.reg)}${l.ac?' · '+esc(l.ac):''} ›</a></div>`:''}</div>`;
+          ${l.reg?`<div class="ap tail"><a href="${fr24(l.reg)}" target="_blank" rel="noopener">✈ ${esc(l.reg)}${l.ac?' · '+esc(l.ac):''} ›</a></div>`:''}
+          ${l.pax?`<div class="ap pxd">Khách dự kiến: <b>C ${l.pax.c||0}</b> · <b>Y ${l.pax.y||0}</b> · tổng ${(l.pax.c||0)+(l.pax.y||0)}</div>`:''}</div>`;
       }).join('')+`</div></div>`;
   }
 
@@ -797,7 +794,7 @@ function dutyHTML(d,i){
     h+='<div class="lgs">'+d.legs.map(l=>`<div class="lg">
       <span class="fn">${l.fl}</span><span class="tm">${l.dep}</span>
       <span class="ar">${l.from} ${l.to}</span><span class="tm">${l.arr}${dmark(l.ad)}</span>
-      ${l.reg?`<a class="tailmini" href="${fr24(l.reg)}" target="_blank" rel="noopener">${esc(l.reg)} ›</a>`:''}
+      ${(l.pax||l.reg)?`<span class="lx">${paxS(l.pax)}${l.reg?`<a class="tailmini" href="${fr24(l.reg)}" target="_blank" rel="noopener">${esc(l.reg)} ›</a>`:''}</span>`:''}
       ${d.dh?'<span class="dh">DHC</span>':''}</div>`).join('')+'</div>';
   }else{
     const nm=d.code||TYPE[d.type]||d.type;
@@ -1068,11 +1065,10 @@ function render(){
     for(let i=0;i<40 && k<=kEnd;i++){ used.add(k); k=addDay(k,1); }
   });
 
-  const items=groups.map(g=>({
-    k:dkey(g.items[0].d.s),
-    last:dkey(g.items[g.items.length-1].d.e||g.items[g.items.length-1].d.s),
-    html:groupHTML(g)
-  }));
+  const items=groups.map(g=>{
+    const ld=g.items[g.items.length-1].d;
+    return {k:dkey(g.items[0].d.s), last:dkey(ld.e||ld.s), end:D(ld.e||ld.s), html:groupHTML(g)};
+  });
   if(ds.length){
     const starts=ds.map(d=>dkey(d.s)).sort();
     const ends=ds.map(d=>dkey(d.e||d.s)).sort();
@@ -1080,7 +1076,7 @@ function render(){
     for(let i=0;i<400 && k<=last;i++){
       if(!used.has(k)){
         const mm=memoOf(k), nn=noteOf(k);
-        items.push({k,last:k,html:
+        items.push({k,last:k,end:null,html:
           `<div class="grp none" data-note="${k}"><div class="dayhd">
              <span class="dd">${fullDate(k)}</span>
              <span class="nolbl">${mm||nn?'Có ghi chú ›':'Không có lịch ›'}</span></div>
@@ -1092,13 +1088,23 @@ function render(){
   }
   items.sort((x,y)=>x.k<y.k?-1:x.k>y.k?1:0);
 
-  const past=[],future=[];
-  items.forEach(it=>{ (it.last<today?past:future).push(it); });
+  /* Duty xong (qua gio ket thuc = Debriefing time) -> vao "Cac chuyen bay truoc".
+     Ngay trong khong co lich thi theo ngay nhu cu. */
+  const now=new Date(), past=[],future=[];
+  let nextEnd=null;
+  items.forEach(it=>{
+    const done=it.end?it.end<=now:it.last<today;
+    (done?past:future).push(it);
+    if(!done&&it.end&&(!nextEnd||it.end<nextEnd)) nextEnd=it.end;
+  });
+  /* Tu chuyen duty xuong muc cu dung luc debrief xong, ke ca khi app dang mo */
+  clearTimeout(window._endT);
+  if(nextEnd){ const ms=nextEnd-now+2000; if(ms<6*3600e3) window._endT=setTimeout(render,ms); }
 
   let h='';
   if(past.length){
-    h+=`<button class="morebtn" id="pastbtn">▾ Các chuyến bay trước (${past.length})</button>
-        <div id="pastwrap" hidden>${past.slice().reverse().map(x=>x.html).join('')}</div>`;
+    h+=`<button class="morebtn" id="pastbtn">${window._pastOpen?'▴':'▾'} Các chuyến bay trước (${past.length})</button>
+        <div id="pastwrap"${window._pastOpen?'':' hidden'}>${past.slice().reverse().map(x=>x.html).join('')}</div>`;
   }
   h+=future.length?future.map(x=>x.html).join('')
      :'<div class="empty-msg">Không còn chuyến nào sắp tới trong kỳ này.</div>';
@@ -1107,7 +1113,7 @@ function render(){
 
   const pb=$('#pastbtn');
   if(pb) pb.onclick=()=>{
-    const w=$('#pastwrap'); w.hidden=!w.hidden;
+    const w=$('#pastwrap'); w.hidden=!w.hidden; window._pastOpen=!w.hidden;
     pb.textContent=(w.hidden?'▾':'▴')+` Các chuyến bay trước (${past.length})`;
   };
   $('#nextbtn').onclick=loadNextMonth;
@@ -1296,6 +1302,9 @@ function renderPay(all){
   $('#paynext').onclick=()=>go(1);
 }
 
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible' && DATA && !$('#app').hidden) render();
+});
 function show(){
   $('#lock').hidden=true; $('#app').hidden=false;
   $('#tabs').hidden=false; $('#hdr').hidden=false; render();
@@ -1303,15 +1312,38 @@ function show(){
 async function boot(){
   const saved=localStorage.getItem(LSK);
   if(saved){
-    try{
-      const key=await crypto.subtle.importKey('raw',b64d(saved),{name:'AES-GCM'},true,['decrypt']);
-      let d=null;
-      try{ d=await decrypt(await fetchEnc(),key); localStorage.setItem(CACHE,JSON.stringify(d)); }
-      catch(e){ const c=localStorage.getItem(CACHE); if(c) d=JSON.parse(c); }
-      if(d){ DATA=d; show(); flushNotes(); return; }
-    }catch(e){}
+    let key=null;
+    try{ key=await crypto.subtle.importKey('raw',b64d(saved),{name:'AES-GCM'},true,['decrypt']); }catch(e){}
+    if(key){
+      let shown=false;
+      const c=localStorage.getItem(CACHE);
+      if(c){ try{ DATA=JSON.parse(c); show(); shown=true; }catch(e){} }
+      ldStart();
+      let enc=null;
+      try{ enc=await fetchEnc(); }catch(e){}           /* mat mang -> giu ban cache */
+      if(enc){
+        try{
+          const d=await decrypt(enc,key);
+          try{ localStorage.setItem(CACHE,JSON.stringify(d)); }catch(e){}
+          if(!shown || d.gen!==DATA.gen){ DATA=d; shown?render():show(); }
+          shown=true;
+        }catch(e){
+          /* Tai duoc du lieu nhung khoa cu khong giai ma duoc = mat khau da doi.
+             KHONG dung cache cu im lang: xoa khoa, hoi mat khau moi. */
+          localStorage.removeItem(LSK); localStorage.removeItem(CACHE);
+          await ldDone(); lockScreen('Mật khẩu đã được đổi. Nhập mật khẩu mới để xem lịch.');
+          return;
+        }
+      }
+      await ldDone();
+      if(shown){ flushNotes(); return; }
+    }
   }
-  $('#lock').hidden=false;
+  lockScreen('');
+}
+function lockScreen(msg){
+  $('#app').hidden=true; $('#tabs').hidden=true; $('#hdr').hidden=true;
+  $('#lock').hidden=false; $('#err').textContent=msg||'';
 }
 $('#go').onclick=async()=>{
   const pw=$('#pw').value; if(!pw) return;
@@ -1331,35 +1363,51 @@ $('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));
   $('#scroll').scrollTop=0;
   if(b.dataset.p==='pay'){ payOff=0; renderPay(DATA.duties||[]); }};
-/* ---------- man hinh mo dau ---------- */
-const PLANE_SVG='<svg viewBox="0 0 24 24" aria-hidden="true">'
-  +'<path d="M12 1.6c.9 0 1.6 1.3 1.6 2.9v4.2l8.1 4.7v2.3l-8.1-2.4v4.6l2.6 1.9v1.9'
-  +'L12 20.9l-4.2 1.2v-1.9l2.6-1.9v-4.6L2.3 15.7v-2.3l8.1-4.7V4.5c0-1.6.7-2.9 1.6-2.9z"/></svg>';
-
-function runSplash(){
-  const sp=$('#splash'); if(!sp) return;
-  const mk=(cls,size,left,dur,delay,anim)=>{
-    const e=document.createElement('span');
-    e.className='pl'+(cls?' '+cls:'');
-    e.innerHTML=PLANE_SVG;
-    e.style.left=left+'vw'; e.style.fontSize=size;
-    e.style.animation=`${anim} ${dur}s cubic-bezier(.32,0,.5,1) ${delay}s forwards`;
-    sp.appendChild(e);
+/* ---------- vuot tu mep trai man hinh de quay lai (nhu iOS) ---------- */
+function edgeBack(el,backBtn){
+  let x0=0,y0=0,dx=0,on=false,lock=null;
+  el.addEventListener('touchstart',e=>{
+    const t=e.touches[0];
+    if(e.touches.length!==1||t.clientX>28){on=false;return;}
+    on=true; lock=null; x0=t.clientX; y0=t.clientY; dx=0;
+    el.style.transition='none';
+  },{passive:true});
+  el.addEventListener('touchmove',e=>{
+    if(!on) return;
+    const t=e.touches[0], mx=t.clientX-x0, my=t.clientY-y0;
+    if(lock===null&&(Math.abs(mx)>8||Math.abs(my)>8)) lock=Math.abs(mx)>Math.abs(my)?'x':'y';
+    if(lock!=='x'){ if(lock==='y') on=false; return; }
+    e.preventDefault();
+    dx=Math.max(0,mx); el.style.transform=`translateX(${dx}px)`;
+    el.style.boxShadow='-12px 0 24px rgba(0,0,0,.45)';
+  },{passive:false});
+  const end=()=>{
+    if(!on) return; on=false;
+    el.style.transition='transform .22s ease';
+    if(lock==='x'&&dx>Math.min(110,innerWidth*.28)){
+      el.style.transform=`translateX(${innerWidth}px)`;
+      setTimeout(()=>{ backBtn.click(); el.style.transition='none';
+        el.style.transform=''; el.style.boxShadow=''; },220);
+    }else{
+      el.style.transform=''; setTimeout(()=>{el.style.boxShadow=''},220);
+    }
   };
-  /* lop 1: nhieu may bay vua */
-  for(let i=0;i<30;i++)
-    mk('', (34+Math.random()*52).toFixed(0)+'px', (Math.random()*94).toFixed(1),
-       (0.85+Math.random()*0.45).toFixed(2), (0.95+Math.random()*0.4).toFixed(2), 'fly');
-  /* lop 2: may bay khong lo phu kin man hinh */
-  [8,30,52,74,-4].forEach((lf,i)=>
-    mk('big', (26+Math.random()*16).toFixed(0)+'vw', lf,
-       (0.95).toFixed(2), (1.3+i*0.07).toFixed(2), 'flybig'));
-
-  setTimeout(()=>$('#sttl').classList.add('go'),1000);
-  setTimeout(()=>sp.classList.add('out'),2150);
-  setTimeout(()=>{sp.hidden=true},2750);
+  el.addEventListener('touchend',end); el.addEventListener('touchcancel',end);
 }
-runSplash();
+edgeBack($('#detail'),$('#back'));
+edgeBack($('#note'),$('#nback'));
+
+/* ---------- thanh cap nhat khi mo app ---------- */
+let ldT0=0;
+function ldStart(){
+  const b=$('#ldbar'); b.hidden=false; b.className=''; void b.offsetWidth;
+  b.classList.add('run'); ldT0=Date.now();
+}
+async function ldDone(){
+  const b=$('#ldbar'); if(b.hidden) return;
+  const left=1000-(Date.now()-ldT0); if(left>0) await sleep(left);
+  b.classList.add('done'); await sleep(600); b.hidden=true; b.className='';
+}
 boot();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
