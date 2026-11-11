@@ -349,7 +349,14 @@ body.pink .box{background:rgba(0,0,0,.2);border-color:rgba(255,175,225,.15)}
 
 .tabs{flex:none;display:flex;gap:4px;z-index:20;background:#0f1a2e;
  border-top:1px solid var(--line);
- padding:10px 8px 8px}
+ padding:8px 8px calc(4px + env(safe-area-inset-bottom,0px))}
+/* App ngoai man hinh chinh (standalone): iOS tinh 100dvh THIEU dung bang thanh trang thai
+   -> khung app ngan, de trong mot dai o day. O che do nay khong co thanh cong cu Safari
+   nen dung top:0 + bottom:0 la an toan. Trong Safari thuong van giu 100dvh (bai hoc 8). */
+@media all and (display-mode:standalone){
+  #shell{bottom:0;height:auto}
+}
+html.standalone #shell{bottom:0;height:auto}
 .tabs .in{max-width:760px;margin:0 auto;display:flex;gap:4px;width:100%}
 .tabs button{flex:1;background:none;border:0;color:var(--mut);font:700 10px/1.25 inherit;
  padding:5px 1px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -374,7 +381,8 @@ body.pink .box{background:rgba(0,0,0,.2);border-color:rgba(255,175,225,.15)}
 </style>
 </head>
 <body>
-<script>try{if(localStorage.getItem('ecrew_theme')==='pink')document.body.classList.add('pink')}catch(e){}</script>
+<script>try{if(localStorage.getItem('ecrew_theme')==='pink')document.body.classList.add('pink')}catch(e){}
+try{if(navigator.standalone||matchMedia('(display-mode: standalone)').matches)document.documentElement.classList.add('standalone')}catch(e){}</script>
 
 <div id="ldbar" hidden><i></i><span>Đang cập nhật…</span></div>
 
@@ -435,8 +443,8 @@ body.pink .box{background:rgba(0,0,0,.2);border-color:rgba(255,175,225,.15)}
 </div>
 
 <script>
-const BUILD='20261111-232407';
-const VER='45';   /* pub.py tu tang cung so voi sw.js */
+const BUILD='20261111-233243';
+const VER='46';   /* pub.py tu tang cung so voi sw.js */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -760,7 +768,8 @@ function openDetail(d){
       : esc(title)}</div>
     <div class="dsub">${sub}</div>
     <div class="ddate">${DOW[D(d.s).getDay()]}, ${D(d.s).toLocaleDateString('vi-VN')}
-      · ${hm(d.s)} – ${hm(d.e)}${d.dh?' · <span class="badge">DHC</span>':''}</div>`;
+      · ${hm(d.s)} – ${hm(d.e)}${d.dh?' · <span class="badge">DHC</span>'
+        :(d.dhAny||(d.legs||[]).some(l=>l.dh))?' · <span class="badge">có chặng DHC</span>':''}</div>`;
 
   if(to){
     const so=signOn(d), dd=t=>sameDay(t,to)?'':' (hôm trước)', mm=t=>{const m=Math.round((to-t)/60000);return Math.floor(m/60)+'h'+pad(m%60);};
@@ -786,7 +795,7 @@ function openDetail(d){
     h+=`<div class="sec"><h3>Chặng bay</h3><div class="box">`+
       d.legs.map(l=>{
         const df=apTZ(l.to)-apTZ(l.from);
-        return `<div class="leg"><div class="l1"><span class="n">${l.fl}</span>
+        return `<div class="leg"><div class="l1"><span class="n">${l.fl}${l.dh?' <span class="badge">DHC</span>':''}</span>
           <span class="p">${l.from}</span><span class="x">${l.dep}${dmark(l.dd)}</span><span class="x">→</span>
           <span class="p">${l.to}</span><span class="x">${l.arr}${dmark(l.ad)}</span>
           <span class="x">· ${hhmm(legMin(l))}</span>${df?`<span class="x">· lệch ${df>0?'+':''}${df}h</span>`:''}</div>
@@ -945,7 +954,8 @@ function dutyHTML(d,i){
       <span class="fn">${l.fl}</span><span class="tm">${l.dep}</span>
       <span class="ar">${l.from} ${l.to}</span><span class="tm">${l.arr}${dmark(l.ad)}</span>
       ${l.reg?`<span class="lx"><a class="tailmini" href="${fr24(l.reg)}" target="_blank" rel="noopener">${esc(l.reg)} ›</a></span>`:''}
-      ${d.dh?'<span class="dh">DHC</span>':''}</div>`).join('')+'</div>';
+      ${l.dh?'<span class="dh">DHC</span>':''}</div>`).join('')+'</div>'
+      +(d.dhUnknown?'<div class="rep"><span class="dh">Có chặng DHC</span> <span>(eCrew không ghi rõ chặng nào)</span></div>':'');
   }else{
     const nm=d.code||TYPE[d.type]||d.type;
     h+=`<div class="lgs"><div class="lg"><span class="fn">${esc(nm)}</span>
@@ -1387,7 +1397,7 @@ function monthStats(list){
     if(to){ const so=signOn(d); if(so && so.first.t.getHours()<5) early++; }
     (d.legs||[]).forEach(l=>{
       legs++; mins+=legMin(l);
-      if(d.dh) dhc++;
+      if(l.dh) dhc++;
       if(!VN(l.from)||!VN(l.to)) intl++;
     });
   });
@@ -1442,7 +1452,7 @@ function payBox(all,off){
   const flights=ds.filter(d=>d.type==='Flight');
   let comH=0,ferH=0,sectors=0;
   flights.forEach(d=>(d.legs||[]).forEach(l=>{sectors++;const m=legMin(l);
-    if(d.dh)ferH+=m/60;else comH+=m/60;}));
+    if(l.dh)ferH+=m/60;else comH+=m/60;}));
   const dutyMin=ds.filter(d=>d.type!=='Off').reduce((a,d)=>{
     const x=D(d.s),y=D(d.e);return a+(x&&y?(y-x)/60000:0)},0);
   const P=PAY, fixed=P.base+P.makeup+P.phone+P.stationery+P.uniform;
