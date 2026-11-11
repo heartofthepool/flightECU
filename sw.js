@@ -1,4 +1,4 @@
-const C='ecrewultra-v44';
+const C='ecrewultra-v45';
 const SHELL=['./','./index.html','./manifest.webmanifest','./icon.png','./apple-touch-icon.png'];
 
 self.addEventListener('install',e=>{
@@ -29,7 +29,7 @@ async function fromCache(req,isPage){
   return new Response(await r.blob(),{status:r.status,statusText:r.statusText,headers:h});
 }
 function networkFirst(req,isPage){
-  const net=fetch(req).then(r=>{
+  const net=fetch(new Request(req.url,{cache:'no-store',credentials:'same-origin'})).then(r=>{
     if(!r||!r.ok||r.redirected) throw new Error('bad');
     const cl=r.clone(); caches.open(C).then(c=>c.put(keyOf(req),cl));
     return r;

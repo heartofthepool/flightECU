@@ -103,6 +103,47 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .badge.cap{background:#1d3326;color:#7bd68e;border-color:#2f5c3d}
 
 
+/* ====== GIAO DIEN HONG (bam chu EcrewUltra de doi qua lai) ====== */
+#hdr h1{cursor:pointer;-webkit-user-select:none;user-select:none}
+body.pink{
+  --bg:#2b0e35;--card:rgba(255,255,255,.09);--card2:rgba(255,255,255,.15);
+  --line:rgba(255,175,225,.2);--fg:#fff3fb;--mut:#d9abd2;--acc:#ff5fb2;
+  --fl:#ff6fbf;--br:#ffc46b;--mk:#ff8fcf;
+}
+body.pink, body.pink #shell{background:linear-gradient(180deg,#6b2168 0%,#45154f 38%,#2b0e35 72%,#1f0a27 100%) fixed}
+body.pink #scroll{background:transparent}
+body.pink #scroll::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.55;
+ background:radial-gradient(160px 160px at 12% 22%,rgba(255,95,178,.18),transparent 70%),
+  radial-gradient(220px 220px at 88% 48%,rgba(190,90,255,.16),transparent 70%),
+  radial-gradient(180px 180px at 30% 82%,rgba(255,120,200,.14),transparent 70%)}
+body.pink #hdr{background:linear-gradient(90deg,#8a2a7f,#6d1f6e);border-bottom-color:rgba(255,175,225,.25)}
+body.pink #hdr h1 span{color:#ffd0ea}
+body.pink .sig{color:#ffc6e6}
+body.pink .tabs{background:rgba(43,14,53,.94);border-top-color:rgba(255,175,225,.2)}
+body.pink .tabs button[aria-selected=true]{background:rgba(255,95,178,.18)}
+body.pink #detail,body.pink #note{background:linear-gradient(180deg,#4f1a58 0%,#2b0e35 60%,#1f0a27 100%)}
+body.pink .dhd{background:rgba(110,32,108,.95)}
+body.pink .dhd button{background:rgba(255,255,255,.12);color:#fff}
+body.pink .grp{border-color:rgba(255,175,225,.18);border-radius:18px;backdrop-filter:blur(6px)}
+body.pink .prep{background:rgba(0,0,0,.22);border-color:rgba(255,175,225,.15)}
+body.pink .lg .fn{color:#ffb6de}
+body.pink .row.today{background:rgba(255,95,178,.14)}
+body.pink #ldbar i{background:linear-gradient(90deg,#ff5fb2,#ffc0e3);box-shadow:0 0 8px rgba(255,95,178,.7)}
+body.pink #ldbar span{background:rgba(70,20,80,.92)}
+body.pink .morebtn{background:rgba(255,255,255,.08);border-color:rgba(255,175,225,.3);color:#ffd0ea}
+body.pink .box{background:rgba(0,0,0,.2);border-color:rgba(255,175,225,.15)}
+
+/* ====== CHUYEN TRANG KIEU CAI DAT iOS ====== */
+#shell{transition:transform .34s cubic-bezier(.2,.85,.25,1),filter .34s ease}
+#shell.under{transform:translateX(-28%);filter:brightness(.62)}
+#detail,#note{will-change:transform}
+#detail.push-in,#note.push-in{animation:pushIn .34s cubic-bezier(.2,.85,.25,1) both;
+ box-shadow:-14px 0 28px rgba(0,0,0,.45)}
+#detail.push-out,#note.push-out{animation:pushOut .28s cubic-bezier(.4,0,.7,1) both}
+@keyframes pushIn{from{transform:translateX(100%)}to{transform:none}}
+@keyframes pushOut{from{transform:none}to{transform:translateX(100%)}}
+@media (prefers-reduced-motion:reduce){#shell,#detail,#note{transition:none!important;animation:none!important}}
+
 /* ====== THANH CAP NHAT KHI MO APP ====== */
 #ldbar{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);z-index:100;
  height:3px;pointer-events:none}
@@ -210,6 +251,8 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 .times .lb b{display:block;color:var(--fg);font-size:13.5px}
 .r-mk .dot{background:var(--mk)}.r-mk .t{color:var(--mk)}
 .r-br .dot{background:var(--br)}.r-br .t{color:var(--br)}
+.r-of .dot{background:#9fb4d6}.r-of .t{color:#9fb4d6}
+.r-gt .dot{background:#7bd68e}.r-gt .t{color:#7bd68e}
 .r-to .dot{background:var(--acc)}.r-to .t{color:var(--acc);font-size:25px}
 .times .note{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--mut)}
 
@@ -331,6 +374,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </style>
 </head>
 <body>
+<script>try{if(localStorage.getItem('ecrew_theme')==='pink')document.body.classList.add('pink')}catch(e){}</script>
 
 <div id="ldbar" hidden><i></i><span>Đang cập nhật…</span></div>
 
@@ -391,7 +435,8 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261111-231125';
+const BUILD='20261111-232407';
+const VER='45';   /* pub.py tu tang cung so voi sw.js */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -563,6 +608,69 @@ function takeoff(d){
   return t;
 }
 const shift=(t,m)=>new Date(t.getTime()+m*60000);
+
+/* ===== GIO SIGN-ON / XE DON theo INTAP 26-010F REV10 (hieu luc 10/11/2026) =====
+   Moi so la SO PHUT TRUOC STD. Hang = khung gio cat canh [dem, cao diem, gio khac].
+   pk = xe don tu khach san, so = sign-on (briefing), of = xe tu van phong SPA ra tau,
+   gate = co mat cua ra tau. HOME = noi o (khong can xe don, tu chuan bi). */
+const HOME='HAN', PREP_BEFORE_SO=120;   /* bat dau chuan bi truoc sign-on 2 tieng (o nha) */
+const INTAP={
+ HAN:{band:'HAN', where:'phòng briefing SPA',
+   dom:{pk:[120,150,135],so:[110,130,115],of:[95,115,100],gate:60},
+   sm: {pk:[135,165,150],so:[120,145,130],of:[100,125,110],gate:65},
+   lh: {pk:[155,190,175],so:[145,170,155],of:[120,145,130],gate:75}},
+ SGN:{band:'SGN', where:'phòng briefing SPA',
+   dom:{pk:[100,120,110],so:90, of:75, gate:60},
+   sm: {pk:[115,135,125],so:105,of:85, gate:65},
+   lh: {pk:[140,160,150],so:130,of:105,gate:75}},
+ DAD:{where:'quầy GO',
+   dom:{pk:95, so:75, gate:60}, sm:{pk:110,so:85,gate:65}, lh:{pk:125,so:95,gate:75}},
+ PQC:{where:'phòng briefing', pqc:true,
+   dom:{pk:[95,110], so:80, brf:15,gate:60},
+   sm: {pk:[110,125],so:95, brf:20,gate:65},
+   lh: {pk:[135,150],so:120,brf:25,gate:75}},
+ ICN:{where:'quầy GO', all:{pk:125,so:105,gate:60}},
+ PUS:{where:'quầy GO', all:{pk:145,so:105,gate:60}},
+ ALA:{where:'quầy GO', all:{pk:135,so:105,gate:75}},
+ SVO:{where:'quầy GO', all:{pk:150,so:135,gate:90}}
+};
+/* Khung gio theo GIO DIA PHUONG noi cat canh: 0 = dem, 1 = cao diem, 2 = gio khac */
+function intapBand(kind,mins){
+  const nightEnd = kind==='SGN' ? 7*60+59 : 8*60;
+  if(mins>=23*60 || mins<=nightEnd) return 0;
+  if((mins>=9*60 && mins<=10*60+15) || (mins>=19*60 && mins<=20*60+30)) return 1;
+  return 2;
+}
+function prevHotel(d){
+  const ds=(DATA&&DATA.duties)||[], i=ds.indexOf(d);
+  for(let j=i-1;j>=0&&j>=i-3;j--) if(ds[j].type==='Hotel') return ds[j];
+  return null;
+}
+/* Tra ve moc gio cho duty bay; null neu khong phai duty bay */
+function signOn(d){
+  const std=takeoff(d); if(!std) return null;
+  const l0=d.legs[0], from=l0.from, to=l0.to;
+  const vn=c=>!!(AP[c]&&AP[c].vn);
+  const cat = vn(from)&&vn(to) ? 'dom' : (legMin(l0)>480 ? 'lh' : 'sm');
+  const locMin=((std.getHours()*60+std.getMinutes()+(apTZ(from)-BASE_TZ)*60)%1440+1440)%1440;
+  let A=INTAP[from], est=false;
+  if(!A){ est=true; A = vn(from) ? INTAP.DAD : INTAP.PUS; }   /* san bay chua co trong INTAP */
+  const r=A.all||A[cat]||A.sm, bi=A.band?intapBand(A.band,locMin):0;
+  const pick=v=>Array.isArray(v)?v[bi]:v;
+  let pk=r.pk;
+  if(A.pqc){ const h=prevHotel(d), nm=((h&&h.hotel&&h.hotel.name)||(h&&h.code)||'').toLowerCase();
+    pk = nm.includes('premier')||nm.includes('emerald') ? r.pk[1] : r.pk[0]; }
+  else pk=pick(pk);
+  const so=pick(r.so), of=r.of!=null?pick(r.of):null;
+  const atHome = from===HOME;
+  const brief=shift(std,-so);
+  return {std, brief, gate:shift(std,-r.gate), office:of!=null?shift(std,-of):null,
+    pickup:atHome?null:shift(std,-pk), prep:shift(brief,-PREP_BEFORE_SO),
+    first: atHome ? {t:shift(brief,-PREP_BEFORE_SO),k:'CHUẨN BỊ'} : {t:shift(std,-pk),k:'XE ĐÓN'},
+    where:A.where, brf:r.brf||null, est, cat, from,
+    catName:{dom:'nội địa',sm:'quốc tế ≤ 8h',lh:'quốc tế > 8h'}[cat],
+    actual: l0.dk==='A'||l0.dk==='E'};
+}
 function legMin(l){
   if(!l.dep||!l.arr) return 0;
   let a=(l.dd||0)*1440 + (+l.dep.slice(0,2))*60 + (+l.dep.slice(2));
@@ -655,15 +763,22 @@ function openDetail(d){
       · ${hm(d.s)} – ${hm(d.e)}${d.dh?' · <span class="badge">DHC</span>':''}</div>`;
 
   if(to){
-    const br=shift(to,-150), mk=shift(to,-270), dd=t=>sameDay(t,to)?'':' (hôm trước)';
-    h+=`<div class="times">
-      <div class="r r-mk"><span class="dot"></span><span class="t">${fmt(mk)}</span>
-        <span class="lb"><b>Bắt đầu chuẩn bị</b>trang điểm, quần áo${dd(mk)}</span></div>
-      <div class="r r-br"><span class="dot"></span><span class="t">${fmt(br)}</span>
-        <span class="lb"><b>Có mặt briefing</b>trước cất cánh 2 giờ 30${dd(br)}</span></div>
+    const so=signOn(d), dd=t=>sameDay(t,to)?'':' (hôm trước)', mm=t=>{const m=Math.round((to-t)/60000);return Math.floor(m/60)+'h'+pad(m%60);};
+    const row=(cls,t,b,sub)=>`<div class="r ${cls}"><span class="dot"></span><span class="t">${fmt(t)}</span>
+        <span class="lb"><b>${b}</b>${sub}${dd(t)}</span></div>`;
+    h+=`<div class="times">`
+      + (so.pickup ? row('r-mk',so.pickup,'Xe đón ở khách sạn',`trước STD ${mm(so.pickup)}`)
+                   : row('r-mk',so.prep,'Bắt đầu chuẩn bị','trang điểm, quần áo · 2 tiếng trước sign-on'))
+      + row('r-br',so.brief,'Sign-on / briefing',`${so.where} ${so.from} · ${so.catName} · trước STD ${mm(so.brief)}${so.brf?' · briefing '+so.brf+' phút':''}`)
+      + (so.office ? row('r-of',so.office,'Xe từ văn phòng SPA ra tàu',`trước STD ${mm(so.office)}`) : '')
+      + row('r-gt',so.gate,'Có mặt cửa ra tàu',`trước STD ${mm(so.gate)}`);
+    const intapNote=`<div class="note">Tính theo INTAP 26-010F REV10${so.est?` · <b>${so.from} chưa có trong INTAP, giờ trên là ước tính</b>`:''}.
+          Trainer/trainee sign-on sớm thêm 10 phút.${so.actual?' Giờ cất cánh đang là giờ thực tế/ước tính, không phải STD.':''}</div>`;
+    h+=`
       <div class="r r-to"><span class="dot"></span><span class="t">${fmt(to)}</span>
         <span class="lb"><b>CẤT CÁNH</b>${d.legs[0].fl} · ${d.legs[0].from} → ${d.legs[0].to}</span></div>
-      ${d.report?`<div class="note">Giờ báo cáo eCrew: <b>${d.report}</b>. Nếu sớm hơn giờ briefing ở trên thì đi theo giờ eCrew.</div>`:''}
+      ${intapNote}
+      ${d.report?`<div class="note">Giờ báo cáo eCrew: <b>${d.report}</b>. Nếu sớm hơn giờ sign-on ở trên thì đi theo giờ eCrew.</div>`:''}
     </div>`;
   }
 
@@ -730,7 +845,7 @@ function openDetail(d){
   }
 
   $('#dbody').innerHTML=h;
-  $('#detail').hidden=false;
+  openPanel($('#detail'));
   document.body.style.overflow='hidden';
   if(d.legs&&d.legs.length){
     let li=d.legs.length-1;
@@ -754,10 +869,24 @@ function openDetail(d){
   }
   $('#detail').scrollTop=0;
 }
-$('#back').onclick=()=>{$('#detail').hidden=true;document.body.style.overflow=''};
+function openPanel(el){
+  el.classList.remove('push-out'); el.hidden=false; void el.offsetWidth;
+  el.classList.add('push-in'); $('#shell').classList.add('under');
+}
+function closePanel(el,instant){
+  const sh=$('#shell');
+  if(instant||el.dataset.swiped){       /* da truot ra bang tay roi -> an luon */
+    delete el.dataset.swiped; el.classList.remove('push-in','push-out'); el.hidden=true;
+    sh.style.transition='none'; sh.classList.remove('under'); sh.style.transform=''; sh.style.filter='';
+    void sh.offsetWidth; sh.style.transition=''; return;
+  }
+  el.classList.remove('push-in'); el.classList.add('push-out'); sh.classList.remove('under');
+  setTimeout(()=>{ el.hidden=true; el.classList.remove('push-out'); },280);
+}
+$('#back').onclick=()=>{closePanel($('#detail'));document.body.style.overflow=''};
 $('#dbody').addEventListener('click',e=>{
   const n=e.target.closest('[data-note]'); if(!n) return;
-  $('#detail').hidden=true; document.body.style.overflow='';
+  closePanel($('#detail'),true); document.body.style.overflow='';
   openNote(n.dataset.note);
 });
 
@@ -798,14 +927,14 @@ function buildGroups(ds){
 }
 
 function dutyHTML(d,i){
-  const to=takeoff(d);
+  const to=takeoff(d), so=signOn(d);
   const dt=D(d.s), today=todayKey()===dkey(d.s);
   let h=`<div class="dayhd"><span class="dd">${fullDate(dkey(d.s))}</span>
     ${today?'<span class="tg">HÔM NAY</span>':''}</div>`;
   if(to){
     h+=`<div class="prep">
-      <div class="m"><div class="t">${fmt(shift(to,-270))}</div><div class="k">CHUẨN BỊ</div></div>
-      <div class="b"><div class="t">${fmt(shift(to,-150))}</div><div class="k">BRIEFING</div></div>
+      <div class="m"><div class="t">${fmt(so.first.t)}</div><div class="k">${so.first.k}</div></div>
+      <div class="b"><div class="t">${fmt(so.brief)}</div><div class="k">BRIEFING${so.est?'*':''}</div></div>
       <div class="o"><div class="t">${fmt(to)}</div><div class="k">CẤT CÁNH</div></div>
     </div>`;
   }
@@ -815,7 +944,7 @@ function dutyHTML(d,i){
     h+='<div class="lgs">'+d.legs.map(l=>`<div class="lg">
       <span class="fn">${l.fl}</span><span class="tm">${l.dep}</span>
       <span class="ar">${l.from} ${l.to}</span><span class="tm">${l.arr}${dmark(l.ad)}</span>
-      ${(l.pax||l.reg)?`<span class="lx">${paxS(l.pax)}${l.reg?`<a class="tailmini" href="${fr24(l.reg)}" target="_blank" rel="noopener">${esc(l.reg)} ›</a>`:''}</span>`:''}
+      ${l.reg?`<span class="lx"><a class="tailmini" href="${fr24(l.reg)}" target="_blank" rel="noopener">${esc(l.reg)} ›</a></span>`:''}
       ${d.dh?'<span class="dh">DHC</span>':''}</div>`).join('')+'</div>';
   }else{
     const nm=d.code||TYPE[d.type]||d.type;
@@ -1056,7 +1185,7 @@ async function quickRefresh(){
   setTimeout(()=>{ if(!busyNow) setStamp(); },300000);
   if(hb&&hb.login){
     showModal('Máy chủ cần <b>đăng nhập lại eCrew</b>.<br>Nhờ chồng chạy relogin trên máy tính.');
-  }else if(!chkAt || Date.now()-chkAt>75*60000){
+  }else if(!chkAt || Date.now()-chkAt>40*60000){
     showModal('Máy chủ kiểm tra eCrew lần cuối '+(chkAt?'lúc <b>'+hhmmOf(hb.at)+'</b>':'đã lâu')+'.<br>'
       +'Muốn hỏi eCrew ngay: <b>giữ nút Cập nhật 1 giây</b> (mất khoảng nửa phút).');
   }
@@ -1186,7 +1315,7 @@ function render(){
     :'<div class="empty-msg">Chưa có dữ liệu tổ bay.</div>';
 
   renderPay(ds);
-  $('#foot').textContent='Kỳ '+(DATA.period?.start||'')+' → '+(DATA.period?.end||'')+' · bản '+BUILD;
+  $('#foot').textContent='Kỳ '+(DATA.period?.start||'')+' → '+(DATA.period?.end||'')+' · phiên bản v'+VER;
 }
 
 let noteKey=null;
@@ -1196,12 +1325,12 @@ function openNote(k){
   const mm=memoOf(k);
   $('#nmemo').innerHTML=mm?`<div class="memo"><b>Ghi chú từ eCrew</b>${esc(mm)}</div>`:'';
   $('#ntext').value=noteOf(k);
-  $('#note').hidden=false;
+  openPanel($('#note'));
 }
-$('#nback').onclick=()=>{$('#note').hidden=true};
+$('#nback').onclick=()=>closePanel($('#note'));
 $('#nsave').onclick=()=>{
   if(noteKey){ saveNote(noteKey,$('#ntext').value); render(); }
-  $('#note').hidden=true;
+  closePanel($('#note'));
 };
 window.addEventListener('online',()=>flushNotes());
 
@@ -1255,7 +1384,7 @@ function monthStats(list){
     if(d.type==='Hotel'){ lay++; return; }
     if(d.type==='Training'){ tr++; return; }
     const to=takeoff(d);
-    if(to && shift(to,-270).getHours()<5) early++;
+    if(to){ const so=signOn(d); if(so && so.first.t.getHours()<5) early++; }
     (d.legs||[]).forEach(l=>{
       legs++; mins+=legMin(l);
       if(d.dh) dhc++;
@@ -1271,7 +1400,7 @@ function statBlock(title,st){
     ${row('Giờ bay',hhmm(st.mins))}
     ${row('Ngày day off',st.off)}
     ${row('Chặng DHC',st.dhc)}
-    ${row('Ngày phải dậy sớm',st.early,'chuẩn bị trước 05:00')}
+    ${row('Ngày phải dậy sớm',st.early,'chuẩn bị / xe đón trước 05:00')}
     ${row('Chặng bay quốc tế',st.intl)}
     ${row('Ngày layover',st.lay,'nghỉ qua đêm ngoài căn cứ')}
     ${st.tr?row('Ngày huấn luyện',st.tr):''}
@@ -1303,7 +1432,7 @@ function renderMonth(ds){
     `<div class="mnote">Tính từ <b>${dmy(r.from)}</b> đến hết <b>${dmy(r.to)}</b>,
       tức trọn tháng ${new Date().getMonth()+1}.<br>
       Giờ bay tính theo giờ khởi hành và hạ cánh của từng chặng.
-      "Ngày phải dậy sớm" đếm ngày bay có giờ bắt đầu chuẩn bị trước 05:00.
+      "Ngày phải dậy sớm" đếm ngày bay có giờ chuẩn bị (hoặc xe đón) trước 05:00.
       "Chặng bay quốc tế" đếm chặng có điểm đi hoặc đến ngoài Việt Nam.</div>`;
 }
 
@@ -1430,6 +1559,18 @@ $('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
   $$('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));
   $('#scroll').scrollTop=0;
   if(b.dataset.p==='pay'){ payOff=0; renderPay(DATA.duties||[]); }};
+/* ---------- doi giao dien: bam chu EcrewUltra ---------- */
+function applyThemeColor(){
+  const m=document.querySelector('meta[name=theme-color]');
+  if(m) m.setAttribute('content',document.body.classList.contains('pink')?'#6b2168':'#0b1220');
+}
+applyThemeColor();
+$('#hdr h1').addEventListener('click',()=>{
+  const pink=document.body.classList.toggle('pink');
+  try{ localStorage.setItem('ecrew_theme',pink?'pink':'dark'); }catch(e){}
+  applyThemeColor(); if(navigator.vibrate) navigator.vibrate(10);
+});
+
 /* ---------- vuot tu mep trai man hinh de quay lai (nhu iOS) ---------- */
 function edgeBack(el,backBtn){
   let x0=0,y0=0,dx=0,on=false,lock=null;
@@ -1445,18 +1586,24 @@ function edgeBack(el,backBtn){
     if(lock===null&&(Math.abs(mx)>8||Math.abs(my)>8)) lock=Math.abs(mx)>Math.abs(my)?'x':'y';
     if(lock!=='x'){ if(lock==='y') on=false; return; }
     e.preventDefault();
-    dx=Math.max(0,mx); el.style.transform=`translateX(${dx}px)`;
+    dx=Math.max(0,mx); el.classList.remove('push-in'); el.style.transform=`translateX(${dx}px)`;
     el.style.boxShadow='-12px 0 24px rgba(0,0,0,.45)';
+    const sh=$('#shell'), k=Math.min(1,dx/innerWidth);
+    sh.style.transition='none'; sh.style.transform=`translateX(${(-28*(1-k)).toFixed(2)}%)`;
+    sh.style.filter=`brightness(${(.62+.38*k).toFixed(3)})`;
   },{passive:false});
   const end=()=>{
     if(!on) return; on=false;
     el.style.transition='transform .22s ease';
+    const sh=$('#shell'); sh.style.transition='transform .22s ease, filter .22s ease';
     if(lock==='x'&&dx>Math.min(110,innerWidth*.28)){
       el.style.transform=`translateX(${innerWidth}px)`;
-      setTimeout(()=>{ backBtn.click(); el.style.transition='none';
+      sh.style.transform='translateX(0)'; sh.style.filter='brightness(1)';
+      setTimeout(()=>{ el.dataset.swiped='1'; backBtn.click(); el.style.transition='none';
         el.style.transform=''; el.style.boxShadow=''; },220);
     }else{
-      el.style.transform=''; setTimeout(()=>{el.style.boxShadow=''},220);
+      el.style.transform=''; sh.style.transform=''; sh.style.filter='';
+      setTimeout(()=>{el.style.boxShadow=''; sh.style.transition='';},220);
     }
   };
   el.addEventListener('touchend',end); el.addEventListener('touchcancel',end);
