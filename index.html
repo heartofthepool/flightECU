@@ -457,8 +457,8 @@ try{if(navigator.standalone||matchMedia('(display-mode: standalone)').matches){
 </div>
 
 <script>
-const BUILD='20261112-000153';
-const VER='48';   /* pub.py tu tang cung so voi sw.js */
+const BUILD='20261112-005535';
+const VER='49';   /* pub.py tu tang cung so voi sw.js */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -1111,7 +1111,7 @@ async function runRefresh(ui){
     if(!sent.ok) throw new Error('send');
   }catch(e){ stop(); return {ok:false,msg:'Không gửi được lệnh tới Mac mini.<br>Kiểm tra mạng rồi thử lại.'}; }
 
-  let real=0, shown=0, gotRun=false, phase='wait', lastPoll=0;
+  let real=0, shown=0, gotRun=false, phase='wait', lastPoll=0, lastGh=0;
   let spent=0, tick=Date.now();
   const bump=()=>{ const n=Date.now(), g=n-tick; tick=n;
     spent += g>20000 ? 800 : g; return spent; };
@@ -1135,8 +1135,23 @@ async function runRefresh(ui){
 
   for(;;){
     const el=bump();
+    /* Du phong: kenh bao tien do (ntfy) co the bi gioi han -> tu xem GitHub co lich moi chua */
+    if(!gotRun && el>20000 && Date.now()-lastGh>8000){
+      lastGh=Date.now();
+      try{
+        const j=await fetchEnc();
+        if(j.gen&&j.gen!==oldGen){
+          DATA=await decrypt(j,key);
+          try{localStorage.setItem(CACHE,JSON.stringify(DATA))}catch(e){}
+          ui.prog(100); render(); stop();
+          return {ok:true,changed:true};
+        }
+      }catch(e){}
+    }
     if(!gotRun && el>90000){ stop();
-      return {ok:false,msg:'Mac mini chưa phản hồi.<br>Kiểm tra máy có bật và nối mạng.'}; }
+      return {ok:false,msg:'Không nhận được phản hồi từ Mac mini.<br>'
+        +'Có thể kênh báo tin đang bị giới hạn trong ngày. Lịch vẫn tự cập nhật 15 phút/lần'
+        +(DATA&&DATA.gen?'<br>(bản đang xem lúc '+hhmmOf(DATA.gen)+')':'')+'.'}; }
     if(el>420000){ stop(); return {ok:false,msg:'Mac mini bận quá lâu.<br>Thử lại sau ít phút.'}; }
     await sleep(700);
 
@@ -1209,7 +1224,7 @@ async function quickRefresh(){
   setTimeout(()=>{ if(!busyNow) setStamp(); },300000);
   if(hb&&hb.login){
     showModal('Máy chủ cần <b>đăng nhập lại eCrew</b>.<br>Nhờ chồng chạy relogin trên máy tính.');
-  }else if(!chkAt || Date.now()-chkAt>40*60000){
+  }else if(!chkAt || Date.now()-chkAt>80*60000){
     showModal('Máy chủ kiểm tra eCrew lần cuối '+(chkAt?'lúc <b>'+hhmmOf(hb.at)+'</b>':'đã lâu')+'.<br>'
       +'Muốn hỏi eCrew ngay: <b>giữ nút Cập nhật 1 giây</b> (mất khoảng nửa phút).');
   }
