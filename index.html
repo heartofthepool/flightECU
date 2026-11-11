@@ -356,8 +356,15 @@ body.pink .box{background:rgba(0,0,0,.2);border-color:rgba(255,175,225,.15)}
 /* App ngoai man hinh chinh: iOS bao chieu cao THIEU dung bang thanh trang thai (ca 100dvh
    lan bottom:0 deu neo vao day "ngan" do). Dat thang chieu cao = chieu cao man hinh that,
    do bang JS vao bien --appH. Trong Safari thuong van giu 100dvh (bai hoc 8). */
-html.standalone #shell{bottom:auto;height:var(--appH,100dvh)}
-html.standalone #detail,html.standalone #note{bottom:auto;height:var(--appH,100dvh)}
+/* WebKit (bug 236445): voi thanh trang thai black-translucent, vung "fixed" bi cat o day
+   gia (thieu dung chieu cao thanh trang thai) -> phan tu position:fixed nam duoi moc do
+   KHONG duoc ve. Trang van phu kin man hinh, nen: cho trang cao bang man hinh that va dat
+   khung app bang position:absolute (khong bi cat theo vung fixed). */
+html.standalone,html.standalone body{height:var(--appH,100%);
+ min-height:calc(100% + env(safe-area-inset-top,0px));overflow:hidden}
+html.standalone #shell{position:absolute;top:0;left:0;right:0;bottom:auto;height:var(--appH,100dvh)}
+html.standalone #detail,html.standalone #note{position:absolute;top:0;left:0;right:0;bottom:auto;
+ height:var(--appH,100dvh)}
 .tabs .in{max-width:760px;margin:0 auto;display:flex;gap:4px;width:100%}
 .tabs button{flex:1;background:none;border:0;color:var(--mut);font:700 10px/1.25 inherit;
  padding:5px 1px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -450,8 +457,8 @@ try{if(navigator.standalone||matchMedia('(display-mode: standalone)').matches){
 </div>
 
 <script>
-const BUILD='20261111-234949';
-const VER='47';   /* pub.py tu tang cung so voi sw.js */
+const BUILD='20261111-220654';
+const VER='44';   /* pub.py tu tang cung so voi sw.js */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
