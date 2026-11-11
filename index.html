@@ -349,14 +349,15 @@ body.pink .box{background:rgba(0,0,0,.2);border-color:rgba(255,175,225,.15)}
 
 .tabs{flex:none;display:flex;gap:4px;z-index:20;background:#0f1a2e;
  border-top:1px solid var(--line);
- padding:8px 8px calc(4px + env(safe-area-inset-bottom,0px))}
+ padding:8px 8px max(6px, calc(env(safe-area-inset-bottom,0px) - 8px))}
 /* App ngoai man hinh chinh (standalone): iOS tinh 100dvh THIEU dung bang thanh trang thai
    -> khung app ngan, de trong mot dai o day. O che do nay khong co thanh cong cu Safari
    nen dung top:0 + bottom:0 la an toan. Trong Safari thuong van giu 100dvh (bai hoc 8). */
-@media all and (display-mode:standalone){
-  #shell{bottom:0;height:auto}
-}
-html.standalone #shell{bottom:0;height:auto}
+/* App ngoai man hinh chinh: iOS bao chieu cao THIEU dung bang thanh trang thai (ca 100dvh
+   lan bottom:0 deu neo vao day "ngan" do). Dat thang chieu cao = chieu cao man hinh that,
+   do bang JS vao bien --appH. Trong Safari thuong van giu 100dvh (bai hoc 8). */
+html.standalone #shell{bottom:auto;height:var(--appH,100dvh)}
+html.standalone #detail,html.standalone #note{bottom:auto;height:var(--appH,100dvh)}
 .tabs .in{max-width:760px;margin:0 auto;display:flex;gap:4px;width:100%}
 .tabs button{flex:1;background:none;border:0;color:var(--mut);font:700 10px/1.25 inherit;
  padding:5px 1px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -382,7 +383,13 @@ html.standalone #shell{bottom:0;height:auto}
 </head>
 <body>
 <script>try{if(localStorage.getItem('ecrew_theme')==='pink')document.body.classList.add('pink')}catch(e){}
-try{if(navigator.standalone||matchMedia('(display-mode: standalone)').matches)document.documentElement.classList.add('standalone')}catch(e){}</script>
+try{if(navigator.standalone||matchMedia('(display-mode: standalone)').matches){
+  const R=document.documentElement; R.classList.add('standalone');
+  const fit=()=>{ const land=innerWidth>innerHeight;
+    const H=land?Math.min(screen.width,screen.height):Math.max(screen.width,screen.height);
+    R.style.setProperty('--appH',Math.max(H,innerHeight)+'px'); };
+  fit(); addEventListener('resize',fit); addEventListener('orientationchange',()=>setTimeout(fit,300));
+}}catch(e){}</script>
 
 <div id="ldbar" hidden><i></i><span>Đang cập nhật…</span></div>
 
@@ -443,8 +450,8 @@ try{if(navigator.standalone||matchMedia('(display-mode: standalone)').matches)do
 </div>
 
 <script>
-const BUILD='20261111-233243';
-const VER='46';   /* pub.py tu tang cung so voi sw.js */
+const BUILD='20261111-234949';
+const VER='47';   /* pub.py tu tang cung so voi sw.js */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
