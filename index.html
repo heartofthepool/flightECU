@@ -48,6 +48,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 @keyframes sp{to{transform:rotate(360deg)}}
 
 /* ====== nut cap nhat: vong tien do + dau tick xanh ====== */
+#stamp{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 #stamp .ic{width:30px;height:30px;flex:none}
 #stamp .pct{font-size:8.5px;font-weight:800;fill:var(--acc);
  text-anchor:middle;dominant-baseline:central}
@@ -390,7 +391,7 @@ body{-webkit-font-smoothing:antialiased;overflow:hidden}
 </div>
 
 <script>
-const BUILD='20261111-224642';
+const BUILD='20261111-230159';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 /* Tu phat hien ban moi tren may chu va nap lai mot lan duy nhat */
@@ -506,10 +507,30 @@ async function deriveKey(pw,salt,iter){
 }
 const decrypt=async(e,k)=>JSON.parse(new TextDecoder().decode(
   await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(e.iv)},k,b64d(e.ct))));
-async function fetchEnc(){
-  const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});
-  if(!r.ok) throw new Error('no data'); return r.json();
+async function fetchT(url,opt,ms){
+  const ac=new AbortController(), t=setTimeout(()=>ac.abort(),ms||8000);
+  try{ return await fetch(url,Object.assign({signal:ac.signal},opt||{})); }
+  finally{ clearTimeout(t); }
 }
+async function fetchEnc(){
+  const r=await fetchT('data.json?t='+Date.now(),{cache:'no-store'},8000);
+  if(!r.ok) throw new Error('no data');
+  if(r.headers.get('x-from-cache')) throw new Error('offline');   /* SW tra ban luu = khong co mang */
+  return r.json();
+}
+/* Nhip tim may chu: sau moi luot 30 phut, may chu bao "da kiem tra eCrew luc ..." qua ntfy */
+const CHK='ecrew_chk';
+async function lastCheck(){
+  if(!DATA||!DATA.ntfy) return null;
+  const r=await fetchT('https://ntfy.sh/'+encodeURIComponent(DATA.ntfy)+'-hb/json?poll=1&since=12h',
+                       {cache:'no-store'},6000);
+  let last=null;
+  (await r.text()).split('\n').forEach(l=>{ try{ const m=JSON.parse(l);
+    if(m.event==='message'){ const q=JSON.parse(m.message); if(q&&q.at) last=q; } }catch(e){} });
+  if(last){ try{ localStorage.setItem(CHK,JSON.stringify(last)); }catch(e){} }
+  return last;
+}
+const savedChk=()=>{ try{ return JSON.parse(localStorage.getItem(CHK)||'null'); }catch(e){ return null; } };
 
 /* ---------- tien ich ---------- */
 const DOW=['CN','T2','T3','T4','T5','T6','T7'];
@@ -838,7 +859,9 @@ const setRing=pct=>{
 const setSub=s=>{const e=$('#stamp small'); if(e) e.textContent=s;};
 function setStamp(state,sub){
   const el=$('#stamp');
-  const t=DATA&&DATA.gen?new Date(DATA.gen).toLocaleString('vi-VN',
+  const ck=savedChk(), g=DATA&&DATA.gen?new Date(DATA.gen):null;
+  const last=ck&&ck.at&&(!g||new Date(ck.at)>g)?new Date(ck.at):g;
+  const t=last?last.toLocaleString('vi-VN',
       {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
   el.classList.toggle('busy',state==='busy');
   if(state!=='ok') el.classList.remove('done');
@@ -880,7 +903,7 @@ const NO_NEW='Chồng vừa đi hỏi Ecrew thì nó bảo<br>chưa có lịch m
 
 /* giao dien chay tren nut "Cap nhat" */
 const stampUI={
-  start:()=>setStamp('busy','Đang kết nối Mac mini'),
+  start:()=>setStamp('busy','Đang hỏi eCrew trực tiếp'),
   prog:(p,msg)=>{ setRing(p); if(msg) setSub(msg); },
   reset:()=>setStamp()
 };
@@ -1004,6 +1027,40 @@ async function runRefresh(ui){
   }
 }
 
+const hhmmOf=iso=>{const d=new Date(iso); return pad(d.getHours())+':'+pad(d.getMinutes());};
+async function quickRefresh(){
+  if(busyNow) return;
+  busyNow=true;
+  setStamp('busy','Đang lấy bản mới nhất'); setRing(25);
+  let key=null;
+  try{ key=await crypto.subtle.importKey('raw',b64d(localStorage.getItem(LSK)),{name:'AES-GCM'},true,['decrypt']); }catch(e){}
+  const [enc,hb]=await Promise.all([fetchEnc().catch(()=>null), lastCheck().catch(()=>null)]);
+  setRing(85);
+  if(!enc){
+    busyNow=false; setStamp();
+    showModal('Đang không có mạng.<br>Vẫn xem được lịch đã lưu'+(DATA&&DATA.gen?' (bản lúc '+hhmmOf(DATA.gen)+')':'')+'.');
+    return;
+  }
+  let changed=false;
+  try{
+    const d=await decrypt(enc,key);
+    if(d.gen!==DATA.gen){ DATA=d; try{localStorage.setItem(CACHE,JSON.stringify(d))}catch(e){} render(); changed=true; }
+  }catch(e){
+    busyNow=false; localStorage.removeItem(LSK); localStorage.removeItem(CACHE);
+    lockScreen('Mật khẩu đã được đổi. Nhập mật khẩu mới để xem lịch.'); return;
+  }
+  setRing(100); await sleep(250);
+  busyNow=false;
+  const chkAt=hb&&hb.at?new Date(hb.at):null;
+  setStamp('ok',(changed?'có lịch mới':'lịch không đổi')+(chkAt?' · kiểm tra '+hhmmOf(hb.at):''));
+  setTimeout(()=>{ if(!busyNow) setStamp(); },300000);
+  if(hb&&hb.login){
+    showModal('Máy chủ cần <b>đăng nhập lại eCrew</b>.<br>Nhờ chồng chạy relogin trên máy tính.');
+  }else if(!chkAt || Date.now()-chkAt>75*60000){
+    showModal('Máy chủ kiểm tra eCrew lần cuối '+(chkAt?'lúc <b>'+hhmmOf(hb.at)+'</b>':'đã lâu')+'.<br>'
+      +'Muốn hỏi eCrew ngay: <b>giữ nút Cập nhật 1 giây</b> (mất khoảng nửa phút).');
+  }
+}
 async function forceRefresh(){
   if(busyNow) return;
   busyNow=true;
@@ -1150,7 +1207,17 @@ window.addEventListener('online',()=>flushNotes());
 
 function showModal(html){ $('#mtx').innerHTML=html; $('#modal').hidden=false; }
 $('#mok').onclick=()=>{$('#modal').hidden=true};
-$('#stamp').onclick=forceRefresh;
+/* bam nhanh -> lay ban moi nhat; giu 0,7s -> hoi eCrew truc tiep qua may chu */
+(()=>{
+  const b=$('#stamp'); let tm=null, fired=false;
+  const down=()=>{ fired=false; clearTimeout(tm);
+    tm=setTimeout(()=>{ fired=true; if(navigator.vibrate) navigator.vibrate(15); forceRefresh(); },700); };
+  const up=()=>clearTimeout(tm);
+  b.addEventListener('pointerdown',down); b.addEventListener('pointerup',up);
+  b.addEventListener('pointerleave',up); b.addEventListener('pointercancel',up);
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+  b.onclick=()=>{ if(fired){ fired=false; return; } quickRefresh(); };
+})();
 $('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').hidden=true};
 
 $('#list').onclick=e=>{
@@ -1336,7 +1403,7 @@ async function boot(){
         }
       }
       await ldDone();
-      if(shown){ flushNotes(); return; }
+      if(shown){ flushNotes(); lastCheck().then(()=>{ if(!busyNow) setStamp(); }).catch(()=>{}); return; }
     }
   }
   lockScreen('');
